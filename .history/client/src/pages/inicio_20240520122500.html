@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud</title>
+</head>
+<body>
+    <div class="body2">
+        <div class="formulariodatos" id="formRef">
+            <div class="division">
+                <label for="Folio" class="labels">No. de folio:</label>
+                <input type="number" id="Folio" class="Inputfolio" />
+                <label >Selecciona la fecha:</label>
+                <input type="date" id="fecha" />
+            </div>
+            <div class="division">
+                <label class="labels">Tipo de Suministro:</label>
+                <label class="labels">Proceso Clave (PC):</label>
+            </div>
+            <div class="division">
+                <select id="Suministro">
+                    <option value="">Seleccione un suministro</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Urgente">Urgente</option>
+                </select>
+                <select id="PC">
+                    <option value="">Seleccione el PC</option>
+                    <option value="Educativo">PC Educativo</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div class="division">
+                <label class="labels">Proyecto:</label>
+                <label class="labels">Actividad:</label>
+            </div>
+            <div class="division">
+                <select id="Proyecto">
+                    <option value="">Seleccione el Proyecto</option>
+                    <option value="ProyectoA">Mantenimiento</option>
+                    <option value="ProyectoB">Mantenimiento 2</option>
+                </select>
+                <select id="Actividad">
+                    <option value="">Seleccione la Actividad</option>
+                    <option value="Actividad A">Verificación de la verificación del programa anual de mantenimiento</option>
+                    <option value="Actividad B">Actividad B</option>
+                </select>
+            </div>
+            <div id="itemsContainer">
+                <div class="division">
+                    <label class="labels">Cantidad:</label>
+                    <input type="number" class="item-cantidad" />
+                    <label class="labels">Unidad de medida:</label>
+                    <select class="item-unidad">
+                        <option value="">Seleccione la Unidad</option>
+                        <option value="Paquete">Paquete</option>
+                        <option value="Rollo">Rollo</option>
+                        <option value="Caja">Caja</option>
+                    </select>
+                    <label class="labels">Descripcion del bien solicitado:</label>
+                    <textarea class="inputs3 item-descripcion"></textarea>
+                    <button onclick="agregarItem()">agregarItem</button>
+                </div>
+            </div>
+            <button type="button" onclick="guardarDatosYGenerarPDF()">Guardar cambios y generar PDF</button>
+            <div class="division">
+                <label class="labels">Justificacion para la adquisición:</label>
+            </div>
+            <textarea class="inputs3" id="Justificacion"></textarea>
+        </div>
+        <div class="botones">
+            <button class="btn-primary" onclick="guardarDatos()">Guardar cambios</button>
+        </div>
+    </div>
+    <script src="../inicio2.js"></script>
+</body>
+</html>

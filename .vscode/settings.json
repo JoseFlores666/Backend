@@ -8,5 +8,6 @@
     "**/Thumbs.db": true,
     "node_modules": true,
     "client/node_modules": true,
-  }
+  },
+  "cmake.configureOnOpen": true
 }

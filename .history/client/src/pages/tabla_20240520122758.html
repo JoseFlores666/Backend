@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla Editable</title>
+    <!-- Incluir jsPDF y autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid black;
+            /* Añadir borde negro a la tabla */
+        }
+        th,
+        td {
+            border: 1px solid black;
+            padding: 2px;
+            font-size: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            resize: none;
+            overflow: hidden;
+            border: none;
+            padding: 0;
+            font-size: 8px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="../img/Papel.jpg" id="image1" alt="" style="height: 100%;" width="100%">
+    <table id="miTabla" class="tabla">
+        <thead>
+            <tr>
+                <th rowspan="2">POA</th>
+                <th style="width: 80px" rowspan="2">PPTO.</th>
+                <th colspan="2">CANTIDAD</th>
+                <th rowspan="2">UNIDAD DE MEDIDA</th>
+                <th style="width: 200px;" rowspan="2">DESCRIPCION DEL BIEN SOLICITADO</th>
+                <th rowspan="2">CANT. ENT.</th>
+            </tr>
+            <tr>
+                <th>SOLIC.</th>
+                <th>POA</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Fila 1 -->
+            <tr>
+                <td id="td-proyecto" rowspan="5"></td>
+                <td></td>
+                <td id="td-cantidad"></td>
+                <td></td>
+                <td id="td-unidad"></td>
+                <td id="td-descripcion"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td ></td>
+                <td ></td>
+                <td ></td>
+                <td ></td>
+                <td ></td>
+                <td ></td>
+            </tr>
+            
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="2"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td id="td-actividad" rowspan="5"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="">JUSTIFICACION PARA LA ADQUISICION:</td>
+                <td id="td-justificacion" colspan="6"></td>
+            </tr>
+        </tbody>
+    </table>
+    <button onclick="generarPDF()">Generar PDF</button>
+    <img src="Papel2.jpg" id="image2" alt="" style="height: 100%;" width="100%">
+
+    <script src="tabla.js"></script>
+</body>
+
+</html>
