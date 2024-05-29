@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #fff;
+  background-image: url("https://pinguinodigital.com/wp-content/uploads/2020/06/Fondo-web-3--1024x640.jpeg");
+  background-size: cover; /* Para ajustar la imagen a la pantalla */
+  background-position: center; /* Para centrar la imagen */
+  background-repeat: no-repeat; /* Para que la imagen no se repita */
+  color: #fff;
+}
+
+.content-container {
+  height: calc(100vh - theme("spacing.20"));
+}
+
+/* styles.css */
+.bg-custom-blue {
+  background-color: rgb(47 47 208);
+  border-color: #fff;
+}

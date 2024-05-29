@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #fff;
+  background-image: url("https://pinguinodigital.com/wp-content/uploads/2020/06/Fondo-web-3--1024x640.jpeg");
+  color: 202020;
+  /* background: #202020;
+  color: white; */
+}
+
+.content-container {
+  height: calc(100vh - theme("spacing.20"));
+}

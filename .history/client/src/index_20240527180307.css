@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #fff;
+  background-image: url("C:\Users\hiasd\OneDrive\Escritorio\zero\mern-crud-auth\client\src\img\calidad_15_K_B).png");
+  background-size: cover; /* Ajusta la imagen para cubrir toda la pantalla */
+  background-position: center; /* Centra la imagen */
+  background-repeat: no-repeat; Evita que la imagen se repita
+  color: #fff;
+}
+
+.content-container {
+  height: calc(100vh - theme("spacing.20"));
+}
+
+/* styles.css */
+.bg-custom-blue {
+  background-color: rgb(68 53 212);
+  border-color: #fff;
+  border: 1px solid #fff;
+}

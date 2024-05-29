@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #fff;
+  background-image: url("https://4.bp.blogspot.com/-Wxt2yBiIumI/TwOEi2aVnTI/AAAAAAAAEz8/aeLz2SBF9ys/s1600/4.jpg");
+  color: 202020;
+  /* background: #202020;
+  color: white; */
+}
+
+.content-container {
+  height: calc(100vh - theme("spacing.20"));
+}
