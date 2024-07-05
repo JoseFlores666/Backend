@@ -1,4 +1,0 @@
-
-
-
-/proyecto/ids
