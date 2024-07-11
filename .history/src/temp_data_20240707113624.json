@@ -1,0 +1,17 @@
+{
+    "folio": "12345",
+    "fecha": "2024-07-06",
+    "fechaAtencion": "2024-07-07",
+    "solicita": "John Doe",
+    "areasoli": "Finanzas",
+    "edificio": "Edificio A",
+    "tipoMantenimiento": "Preventivo",
+    "tipoTrabajo": "Reparación",
+    "tipoSolicitud": "Urgente",
+    "desc": "Descripción del trabajo",
+    "obs": "Observaciones",
+    "items": [
+        {"cantidad": "1", "unidad": "pieza", "descripcion": "Item 1"},
+        {"cantidad": "2", "unidad": "caja", "descripcion": "Item 2"}
+    ]
+}

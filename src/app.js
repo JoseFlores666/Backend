@@ -11,7 +11,8 @@ import actrouter from "./routes/act.routes.js";
 import foliorouter from "./routes/folio.routes.js";
 import firmasrouter from "./routes/firmas.routes.js";
 import api_keyrouter from "./routes/api_key.routes.js";
-
+import historialInput from "./routes/historialInput.routes.js";
+import bodyParser from "body-parser";
 import { FRONTEND_URL } from "./config.js";
 
 const app = express();
@@ -22,9 +23,10 @@ app.use(
     origin: FRONTEND_URL,
   })
 );
+
 app.use(morgan("dev"));
 app.use(express.json());
-
+app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/api/solicitud", solirouter);
@@ -37,6 +39,7 @@ app.use("/api/proyecto", proyectrouter);
 app.use("/api/actividad", actrouter);
 app.use("/api/firmas", firmasrouter);
 app.use("/api/auth", authRoutes);
+app.use("/api/historialInput", historialInput);
 
 if (process.env.NODE_ENV === "production") {
   const path = await import("path");
