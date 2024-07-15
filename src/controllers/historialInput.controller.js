@@ -1,4 +1,5 @@
 import InformeTecnico from "../models/InformeTec.modal.js";
+import Solicitud from "../models/solicitud.modal.js";
 
 export const verTodosInformes = async (req, res) => {
   try {
@@ -34,6 +35,39 @@ export const verTodosInformes = async (req, res) => {
     });
 
     res.json(formattedInformes);
+  } catch (error) {
+    console.error("Error al obtener informes técnicos:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+export const verTodasSoli = async (req, res) => {
+  try {
+    const solicitudes = await Solicitud.find(
+      {},
+      {
+        areaSolicitante: 1,
+        "suministros.descripcion": 1,
+        justificacionAdquisicion: 1,
+        _id: 0,
+      }
+    );
+
+    // Mapear los resultados para obtener solo los campos necesarios en un solo objeto
+    const formattedSolicitudes = solicitudes.map((soli) => {
+      // Concatenar los valores de solicitud.suministros.descripcion
+      const insumosSolicitados = soli.suministros
+        .map((item) => item.descripcion)
+        .filter(Boolean) // Filtrar valores falsy (undefined, null, etc.)
+        .join(", "); // Unir los valores con una coma y un espacio
+
+      return {
+        areaSolicitante: soli.areaSolicitante || "",
+        soliInsumosDescripcion: insumosSolicitados || "", // Devolver como una cadena vacía si no hay valores
+        justificacionAdquisicion: soli.justificacionAdquisicion || "", // Agregar justificación
+      };
+    });
+
+    res.json(formattedSolicitudes);
   } catch (error) {
     console.error("Error al obtener informes técnicos:", error);
     res.status(500).json({ error: "Error interno del servidor" });

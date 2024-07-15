@@ -3,7 +3,7 @@ import Solicitud from "../models/solicitud.modal.js";
 export const abonarSolicitud = async (req, res) => {
   try {
     const { id } = req.params;
-    const { folioExterno, items, arrayID } = req.body;
+    const { items } = req.body;
 
     console.log("Items recibidos:", req.body);
 
@@ -13,16 +13,11 @@ export const abonarSolicitud = async (req, res) => {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    // Actualizar folio externo si no existe
-    const existeFolioExterno = await Solicitud.exists({ folioExterno });
-    if (!existeFolioExterno) {
-      solicitudExistente.folioExterno = folioExterno;
-    }
-
-    // Asegúrate de que arrayID y items tienen la misma longitud
-    if (arrayID.length !== items.length) {
+    // Validar que la longitud de los items coincide con la de los suministros
+    if (items.length !== solicitudExistente.suministros.length) {
       return res.status(400).json({
-        error: "La longitud de arrayID y items debe ser la misma.",
+        error:
+          "La longitud de items debe ser la misma que la de los suministros en la solicitud.",
       });
     }
 
@@ -30,13 +25,9 @@ export const abonarSolicitud = async (req, res) => {
     let allItemsCompleted = true;
 
     // Actualizar los suministros
-    for (let i = 0; i < arrayID.length; i++) {
-      const suministroID = arrayID[i];
+    for (let i = 0; i < items.length; i++) {
       const item = items[i];
-
-      const suministro = solicitudExistente.suministros.find(
-        (s) => s._id.toString() === suministroID
-      );
+      const suministro = solicitudExistente.suministros[i];
 
       if (suministro) {
         if (!suministro.cantidadAcumulada) {
@@ -60,12 +51,12 @@ export const abonarSolicitud = async (req, res) => {
           }
         } else {
           return res.status(400).json({
-            error: `La cantidad acumulada no puede exceder la cantidad requerida para el suministro ${suministroID}.`,
+            error: `La cantidad acumulada no puede exceder la cantidad requerida para el suministro ${suministro._id}.`,
           });
         }
       } else {
         return res.status(404).json({
-          error: `Suministro ${suministroID} no encontrado en la solicitud.`,
+          error: `Suministro ${suministro._id} no encontrado en la solicitud.`,
         });
       }
     }

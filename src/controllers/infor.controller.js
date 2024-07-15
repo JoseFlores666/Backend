@@ -135,25 +135,32 @@ export const editarInforme = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
-
 export const llenadoDEPInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { fechaAtencion, items, observacion, user } = req.body;
+    const { folio, fechaOrden, items, observaciones, user } = req.body;
+
+    console.log("Request Body:", req.body);
+    if (!Array.isArray(items)) {
+      return res
+        .status(400)
+        .json({ error: "El campo 'items' debe ser un array" });
+    }
 
     const myinforme = await InformeTecnico.findById(id);
     if (!myinforme) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    myinforme.solicitud.fechaAtencion = fechaAtencion;
+    myinforme.folioExterno = folio;
+    myinforme.solicitud.fechaAtencion = fechaOrden;
 
     myinforme.solicitud.insumosSolicitados = items.map((item) => ({
       cantidad: item.cantidad,
       descripcion: item.descripcion,
     }));
 
-    myinforme.solicitud.Observacionestecnicas = observacion;
+    myinforme.solicitud.Observacionestecnicas = observaciones;
     myinforme.user = user;
 
     await myinforme.save();
