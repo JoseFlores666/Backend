@@ -27,6 +27,7 @@ const informeTecnicSchema = new mongoose.Schema({
   },
   solicitud: {
     fechaAtencion: String,
+    
     insumosSolicitados: [
       {
         cantidad: Number,

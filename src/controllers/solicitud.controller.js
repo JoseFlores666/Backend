@@ -30,7 +30,6 @@ export const crearUnaSolicitud = async (req, res) => {
       pc,
       proyecto,
       actividad,
-      estado,
       fecha,
       justificacion,
       id,
@@ -42,7 +41,6 @@ export const crearUnaSolicitud = async (req, res) => {
       procesoClave: pc,
       proyecto,
       actividades: actividad,
-      estado,
       fecha,
       firmas: "664d5e645db2ce15d4468548",
       justificacionAdquisicion: justificacion,
@@ -156,7 +154,7 @@ export const editarSolicitudFolioExterno = async (req, res) => {
     // let estado = "Asignada";
 
     const { folioExterno, estado } = req.body;
-
+    console.log(req.body);
     const soli = await Solicitud.findById(id);
     if (!soli) {
       return res.status(500).json({ mensaje: "Solicitud no encontrada" });
@@ -165,10 +163,13 @@ export const editarSolicitudFolioExterno = async (req, res) => {
       return res.status(500).json({ mensaje: " Error folio duplicado" });
     }
 
-    soli.folioExterno = folioExterno;
-    if (!estado) {
+    console.log(soli.estado);
+    if (soli.estado === "Pendiente") {
       soli.estado = estado;
     }
+
+    soli.folioExterno = folioExterno;
+
     await soli.save();
 
     res.json(soli);
@@ -178,6 +179,7 @@ export const editarSolicitudFolioExterno = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
+
 export const editarSolicitudEstado = async (req, res) => {
   try {
     const { id } = req.params;

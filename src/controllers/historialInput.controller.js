@@ -46,7 +46,7 @@ export const verTodasSoli = async (req, res) => {
       {},
       {
         areaSolicitante: 1,
-        "suministros.descripcion": 1,
+        suministros: 1,
         justificacionAdquisicion: 1,
         _id: 0,
       }
@@ -54,15 +54,14 @@ export const verTodasSoli = async (req, res) => {
 
     // Mapear los resultados para obtener solo los campos necesarios en un solo objeto
     const formattedSolicitudes = solicitudes.map((soli) => {
-      // Concatenar los valores de solicitud.suministros.descripcion
-      const insumosSolicitados = soli.suministros
+      // Obtener solo las descripciones de los suministros
+      const descripcionesSuministros = soli.suministros
         .map((item) => item.descripcion)
-        .filter(Boolean) // Filtrar valores falsy (undefined, null, etc.)
-        .join(", "); // Unir los valores con una coma y un espacio
+        .filter(Boolean); // Filtrar valores falsy (undefined, null, etc.)
 
       return {
         areaSolicitante: soli.areaSolicitante || "",
-        soliInsumosDescripcion: insumosSolicitados || "", // Devolver como una cadena vacía si no hay valores
+        suministros: descripcionesSuministros || [], // Devolver array de descripciones
         justificacionAdquisicion: soli.justificacionAdquisicion || "", // Agregar justificación
       };
     });

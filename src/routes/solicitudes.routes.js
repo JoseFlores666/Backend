@@ -1,14 +1,6 @@
 import { Router } from "express";
 import { auth } from "../middlewares/auth.middleware.js";
-import {
-  crearUnaSolicitud,
-  editarUnaSolicitud,
-  eliminarUnaSolicitud,
-  getTodasSolicitudes,
-  verUnaSolicitudPorId,
-  verSolicitudesPorEstado,
-  editarSolicitudFolioExterno,editarSolicitudEstado,
-} from "../controllers/solicitud.controller.js";
+import {crearUnaSolicitud, editarUnaSolicitud, eliminarUnaSolicitud, getTodasSolicitudes, verUnaSolicitudPorId, verSolicitudesPorEstado,editarSolicitudFolioExterno,editarSolicitudEstado,} from "../controllers/solicitud.controller.js";
 
 const router = Router();
 
@@ -17,7 +9,7 @@ router.get("/:id", auth, verUnaSolicitudPorId);
 router.post("/", auth, crearUnaSolicitud);
 router.delete("/eliminar/:id", auth, eliminarUnaSolicitud);
 router.put("/:id", auth, editarUnaSolicitud);
-router.put("/folioExterno/:id", auth, editarSolicitudFolioExterno);
+router.put("/folioExterno/:id", editarSolicitudFolioExterno);
 router.put("/estado/:id",auth, editarSolicitudEstado);
 router.get("/estado/:estado", auth, verSolicitudesPorEstado);
 router.get("/fecha/:fecha", auth, verSolicitudesPorEstado);

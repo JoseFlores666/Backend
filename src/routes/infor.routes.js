@@ -24,7 +24,7 @@ router.post(
 );
 
 router.put("/:id", auth, editarInforme);
-router.get("/:id", auth, verInformePorId);
+router.get("/:id", verInformePorId);
 router.delete("/:id", auth, eliminarInforme);
 
 export default router;
