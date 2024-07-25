@@ -45,7 +45,7 @@ export const crearInforme = async (req, res) => {
       },
       firmas: "664d5e645db2ce15d4468548",
       user,
-      estado: "Sin asignar",
+      estado: "Recibida",
     });
 
     await nuevoInforme.save();
@@ -197,25 +197,30 @@ export const AsignarTecnicoInforme = async (req, res) => {
   }
 };
 
-export const editarSolicitudEstado = async (req, res) => {
+export const editarEstadoDelInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const estado = "Rechazada";
+    const estado = "Declinada";
 
-    const soli = await Solicitud.findById(id);
+    const informe = await InformeTecnico.findById(id);
 
-    if (!soli) {
+    if (!informe) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    soli.estado = estado;
-
-    await soli.save();
-
-    res.status(200).json(soli);
-    console.log("Solicitud actualizada exitosamente");
+    if (informe.estado === "Recibida") {
+      informe.estado = estado;
+      await informe.save();
+      res.status(200).json({
+        mensaje: "El informe ha sido declinado existosamente",
+      });
+    } else {
+      res.status(400).json({
+        mensaje: "Error, el informe ya ha sido asignado a un técnico",
+      });
+    }
   } catch (error) {
-    console.error("Error al actualizar la solicitud:", error);
+    console.error("Error al actualizar el informe:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };

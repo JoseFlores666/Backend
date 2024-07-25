@@ -3,7 +3,6 @@ import FolioCounter from "./folioCounter.modal.js";
 
 const informeTecnicSchema = new mongoose.Schema({
   folio: String,
-  folioExterno: String,
   informe: {
     Solicita: {
       nombre: String,
@@ -27,7 +26,7 @@ const informeTecnicSchema = new mongoose.Schema({
   },
   solicitud: {
     fechaAtencion: String,
-    
+
     insumosSolicitados: [
       {
         cantidad: Number,
@@ -51,29 +50,14 @@ const informeTecnicSchema = new mongoose.Schema({
   estado: {
     type: String,
     required: true,
-    enum: ["Asignada", "Diagnosticada", "Atendida", "Rechaza", "Sin asignar"],
-    default: "Sin asignar",
+    enum: ["Recibida", "Asignada", "Diagnosticada", "Completada", "Declinada"],
+    default: "Recibida",
   },
 });
 informeTecnicSchema.pre("save", async function (next) {
   try {
     if (!this.folio) {
       const now = new Date();
-      const monthNames = [
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre",
-      ];
-      const currentMonth = monthNames[now.getMonth()]; // Nombre del mes actual
       const currentYear = now.getFullYear(); // Año actual
 
       let folioCounter = await FolioCounter.findOne({});
@@ -81,18 +65,13 @@ informeTecnicSchema.pre("save", async function (next) {
         // Si no existe, crear uno nuevo
         folioCounter = new FolioCounter({
           counterInforme: 0,
-          monthInforme: currentMonth,
           yearInforme: currentYear,
         });
       }
 
-      // Si el mes ha cambiado, reiniciar el contador de informes a 0
-      if (
-        folioCounter.monthInforme !== currentMonth ||
-        folioCounter.yearInforme !== currentYear
-      ) {
+      // Si el año ha cambiado, reiniciar el contador de informes a 0
+      if (folioCounter.yearInforme !== currentYear) {
         folioCounter.counterInforme = 0;
-        folioCounter.monthInforme = currentMonth;
         folioCounter.yearInforme = currentYear;
       }
 
@@ -101,16 +80,13 @@ informeTecnicSchema.pre("save", async function (next) {
       await folioCounter.save();
 
       // Generar el folio para informes
-      this.folio = `${currentYear}/${currentMonth}/${folioCounter.counterInforme
-        .toString()
-        .padStart(3, "0")}`;
+      this.folio = `${folioCounter.counterInforme.toString().padStart(4, "0")}`;
     }
   } catch (err) {
     console.error("Error in save middleware:", err);
-    // Handle error here, throw or log as needed
-    throw err; // Rethrow the error to prevent saving the document
+    // Manejar el error aquí, lanzar o registrar según sea necesario
+    throw err; // Volver a lanzar el error para evitar guardar el documento
   }
   next();
 });
-
 export default mongoose.model("InformeTecnico", informeTecnicSchema);
