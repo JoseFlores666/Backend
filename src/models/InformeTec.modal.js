@@ -44,6 +44,10 @@ const informeTecnicSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
   },
+  tecnicos: {
+    type: mongoose.Types.ObjectId,
+    ref: "Tecnicos",
+  },
   estado: {
     type: String,
     required: true,

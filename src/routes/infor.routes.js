@@ -7,6 +7,7 @@ import {
   verInformePorId,
   verTodosInformes,
   llenadoDEPInforme,
+  AsignarTecnicoInforme,
 } from "../controllers/infor.controller.js";
 import fileUpload from "express-fileupload";
 
@@ -14,16 +15,17 @@ const router = Router();
 
 router.get("/", auth, verTodosInformes);
 router.post("/llenadoDEPInforme/:id", llenadoDEPInforme);
-router.post(
-  "/",
+router.post("/", crearInforme);
+
+router.put("/:id", auth, editarInforme);
+router.put(
+  "/AsignarTecnico/:id",
   fileUpload({
     useTempFiles: true,
     tempFileDir: "./uploads",
   }),
-  crearInforme
+  AsignarTecnicoInforme
 );
-
-router.put("/:id", auth, editarInforme);
 router.get("/:id", verInformePorId);
 router.delete("/:id", auth, eliminarInforme);
 
