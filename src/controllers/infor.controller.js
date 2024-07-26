@@ -56,7 +56,6 @@ export const crearInforme = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
-
 export const verInformePorId = async (req, res) => {
   try {
     const informe = await InformeTecnico.findById(req.params.id);
@@ -221,6 +220,19 @@ export const editarEstadoDelInforme = async (req, res) => {
     }
   } catch (error) {
     console.error("Error al actualizar el informe:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+export const verImagenesInformePorId = async (req, res) => {
+  try {
+    const informe = await InformeTecnico.findById(req.params.id).select('informe.imagenes');
+    
+    if (!informe) {
+      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+    }
+    res.json(informe.informe.imagenes);
+  } catch (error) {
+    console.error("Error al obtener informe técnico por ID:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
