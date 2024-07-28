@@ -8,7 +8,7 @@ import {
 const router = Router();
 
 router.get("/", verTodosLosTecnicos);
-router.get("/descripcionYTecnico/:id", traeDescripcionTecnInforId);
+router.get("/Encabezado/:id", traeDescripcionTecnInforId);
 router.post("/crearPerfilTecnico", crearPerfilTecnico);
 
 export default router;

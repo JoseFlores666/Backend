@@ -32,26 +32,26 @@ export const crearPerfilTecnico = async (req, res) => {
 
 export const traeDescripcionTecnInforId = async (req, res) => {
   try {
-    const { idTecnico } = req.body;
-    const informe = await InformeTecnico.findById(req.params.id).select(
-      "informe.descripcionDelServicio tecnicos"
-    );
+    // Busca el informe técnico por ID e incluye los campos necesarios
+    const informe = await InformeTecnico.findById(req.params.id)
+      .select("folio informe tecnicos");
 
     if (!informe) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
 
+    // Verifica si hay técnicos asociados al informe
     if (!informe.tecnicos || informe.tecnicos.length === 0) {
-      return res
-        .status(404)
-        .json({ mensaje: "No hay técnicos asociados con este informe" });
+      return res.status(404).json({ mensaje: "No hay técnicos asociados con este informe" });
     }
 
-    const tecnico = await Tecnicos.findById(informe.tecnicos);
+    // Busca los técnicos asociados al informe
+    const tecnicos = await Tecnicos.find({ _id: { $in: informe.tecnicos } });
 
     res.json({
-      descripcionDelServicio: informe.informe.descripcionDelServicio,
-      tecnico,
+      folio: informe.folio,
+      descripcionDelServicio: informe.informe?.descripcionDelServicio || null,
+      tecnicos,
     });
   } catch (error) {
     console.error("Error al obtener informe técnico por ID:", error);
