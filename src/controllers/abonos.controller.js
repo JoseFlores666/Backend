@@ -13,14 +13,6 @@ export const abonarSolicitud = async (req, res) => {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    // Validar que la longitud de los items coincide con la de los suministros
-    if (items.length !== solicitudExistente.suministros.length) {
-      return res.status(400).json({
-        error:
-          "La longitud de items debe ser la misma que la de los suministros en la solicitud.",
-      });
-    }
-
     let abonoRealizado = false;
     let allItemsCompleted = true;
 
@@ -75,7 +67,7 @@ export const abonarSolicitud = async (req, res) => {
 
     // Guardar la solicitud actualizada
     await solicitudExistente.save();
-    console.log("Solicitud actualizada exitosamente");
+
     return res.json({
       mensaje: "El abono se realizó exitosamente",
       solicitud: solicitudExistente,
