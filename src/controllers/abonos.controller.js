@@ -34,25 +34,29 @@ export const abonarSolicitud = async (req, res) => {
           suministro.cantidadAcumulada = 0;
         }
 
-        const nuevaCantidadAcumulada =
-          suministro.cantidadAcumulada + parseInt(item.cantidadEntregada);
+        const cantidadEntregada = parseInt(item.cantidadEntregada, 10);
 
-        if (nuevaCantidadAcumulada <= suministro.cantidad) {
-          suministro.cantidadAcumulada = nuevaCantidadAcumulada;
-          suministro.cantidadEntregada = 0;
-          suministro.NumeroDeEntregas += 1;
+        if (cantidadEntregada > 0) {
+          const nuevaCantidadAcumulada =
+            suministro.cantidadAcumulada + cantidadEntregada;
 
-          if (suministro.NumeroDeEntregas > 0) {
-            abonoRealizado = true;
+          if (nuevaCantidadAcumulada <= suministro.cantidad) {
+            suministro.cantidadAcumulada = nuevaCantidadAcumulada;
+            suministro.cantidadEntregada = 0; // Resetear la cantidad entregada
+            suministro.NumeroDeEntregas += 1;
+
+            if (suministro.NumeroDeEntregas > 0) {
+              abonoRealizado = true;
+            }
+
+            if (suministro.cantidadAcumulada < suministro.cantidad) {
+              allItemsCompleted = false;
+            }
+          } else {
+            return res.status(400).json({
+              error: `La cantidad acumulada no puede exceder la cantidad requerida para el suministro ${suministro._id}.`,
+            });
           }
-
-          if (suministro.cantidadAcumulada < suministro.cantidad) {
-            allItemsCompleted = false;
-          }
-        } else {
-          return res.status(400).json({
-            error: `La cantidad acumulada no puede exceder la cantidad requerida para el suministro ${suministro._id}.`,
-          });
         }
       } else {
         return res.status(404).json({
@@ -73,7 +77,7 @@ export const abonarSolicitud = async (req, res) => {
     await solicitudExistente.save();
     console.log("Solicitud actualizada exitosamente");
     return res.json({
-      mensaje: "El abono realizado exitosamente",
+      mensaje: "El abono se realizó exitosamente",
       solicitud: solicitudExistente,
     });
   } catch (error) {

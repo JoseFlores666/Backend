@@ -151,7 +151,6 @@ export const editarUnaSolicitud = async (req, res) => {
 export const editarSolicitudFolioExterno = async (req, res) => {
   try {
     const { id } = req.params;
-    // let estado = "Asignada";
 
     const { folioExterno, estado } = req.body;
     console.log(req.body);

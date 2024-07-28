@@ -150,13 +150,12 @@ export const llenadoDEPInforme = async (req, res) => {
 export const AsignarTecnicoInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { descripcion, idTecnico } = req.body;
+    const { idTecnico } = req.body;
 
     const Informe = await InformeTecnico.findByIdAndUpdate(id);
     if (!Informe) {
       return res.status(404).json({ mensaje: "Informe no encontrada" });
     }
-    Informe.solicitud.Observacionestecnicas = descripcion;
     Informe.tecnicos = idTecnico;
 
     const imagenes = [];
@@ -225,14 +224,76 @@ export const editarEstadoDelInforme = async (req, res) => {
 };
 export const verImagenesInformePorId = async (req, res) => {
   try {
-    const informe = await InformeTecnico.findById(req.params.id).select('informe.imagenes');
-    
+    const informe = await InformeTecnico.findById(req.params.id).select(
+      "informe.imagenes"
+    );
+
     if (!informe) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
     res.json(informe.informe.imagenes);
   } catch (error) {
     console.error("Error al obtener informe técnico por ID:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+export const editarObservaciones = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log(req.body);
+    const { observaciones } = req.body;
+
+    if (!observaciones) {
+      return res.status(400).json({ mensaje: "Coloque una descripción" });
+    }
+
+    const informeEditado = await InformeTecnico.findById(id);
+    if (!informeEditado) {
+      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+    }
+
+    informeEditado.solicitud.Observacionestecnicas = observaciones;
+
+    const imagenes = [];
+    if (req.files) {
+      const fileKeys = Object.keys(req.files);
+
+      for (const key of fileKeys) {
+        const file = req.files[key];
+
+        try {
+          // Subir la imagen y obtener los datos de la imagen subida
+          const result = await uploadImage(file.tempFilePath || file.path);
+
+          imagenes.push({
+            public_id: result.public_id,
+            secure_url: result.secure_url,
+          });
+
+          // Elimina el archivo temporal después de subirlo
+          await fs.unlink(file.tempFilePath || file.path);
+        } catch (error) {
+          console.error("Error al procesar la imagen:", error);
+          return res.status(500).json({ error: "Error al procesar la imagen" });
+        }
+      }
+    }
+
+    if (imagenes.length > 0) {
+      informeEditado.informe.imagenes = [
+        ...informeEditado.informe.imagenes,
+        ...imagenes,
+      ];
+    }
+
+    await informeEditado.save();
+
+    res
+      .status(200)
+      .json({ mensaje: "Observaciones y imágenes agregadas exitosamente" });
+  } catch (error) {
+    console.error("Error al editar observaciones del informe:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };

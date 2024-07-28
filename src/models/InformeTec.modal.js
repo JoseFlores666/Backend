@@ -54,6 +54,7 @@ const informeTecnicSchema = new mongoose.Schema({
     default: "Recibida",
   },
 });
+
 informeTecnicSchema.pre("save", async function (next) {
   try {
     if (!this.folio) {
