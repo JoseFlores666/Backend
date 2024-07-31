@@ -19,7 +19,7 @@ export const crearProyecto = async (req, res) => {
 export const obtenerProyectos = async (req, res) => {
   try {
     const proyectos = await Proyecto.find();
-    res.json(proyectos);
+    res.status(200).json(proyectos);
   } catch (error) {
     console.error("Error al obtener proyectos:", error);
     res.status(500).json({ error: "Error interno del servidor" });
@@ -39,18 +39,18 @@ export const obtenerIdsYNombreProyectos = async (req, res) => {
 export const obtenerProyectoYActividades = async (req, res) => {
   try {
     const { id } = req.params;
-    const proyecto = await Proyecto.findById(id).populate('actividades');
+    const proyecto = await Proyecto.findById(id).populate("actividades");
 
     if (!proyecto) {
-      return res.status(404).json({ message: 'Proyecto no encontrado' });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
     res.json(proyecto);
   } catch (error) {
-    console.error('Error al obtener proyecto con actividades:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    console.error("Error al obtener proyecto con actividades:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
-}
+};
 
 export const eliminarProyecto = async (req, res) => {
   try {
@@ -70,21 +70,30 @@ export const obtenerProyectoYActividad = async (req, res) => {
   try {
     const { proyectoId, actividadId } = req.params;
 
-    const proyecto = await Proyecto.findById(proyectoId).populate('actividades');
+    const proyecto = await Proyecto.findById(proyectoId).populate(
+      "actividades"
+    );
 
     if (!proyecto) {
-      return res.status(404).json({ message: 'Proyecto no encontrado' });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
-    const actividad = proyecto.actividades.find(act => act._id.toString() === actividadId);
+    const actividad = proyecto.actividades.find(
+      (act) => act._id.toString() === actividadId
+    );
 
     if (!actividad) {
-      return res.status(404).json({ message: 'Actividad no encontrada en el proyecto' });
+      return res
+        .status(404)
+        .json({ message: "Actividad no encontrada en el proyecto" });
     }
 
-    res.json({ nombreProyecto: proyecto.nombre, nombreActividad: actividad.nombre });
+    res.json({
+      nombreProyecto: proyecto.nombre,
+      nombreActividad: actividad.nombre,
+    });
   } catch (error) {
-    console.error('Error al obtener proyecto y actividad:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    console.error("Error al obtener proyecto y actividad:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };

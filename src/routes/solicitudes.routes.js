@@ -12,6 +12,5 @@ router.put("/:id", auth, editarUnaSolicitud);
 router.put("/folioExterno/:id", editarSolicitudFolioExterno);
 router.put("/estado/:id",auth, editarSolicitudEstado);
 router.get("/estado/:estado", auth, verSolicitudesPorEstado);
-router.get("/fecha/:fecha", auth, verSolicitudesPorEstado);
 
 export default router;

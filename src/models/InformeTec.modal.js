@@ -50,8 +50,6 @@ const informeTecnicSchema = new mongoose.Schema({
   estado: {
     type: String,
     required: true,
-    enum: ["Recibida", "Asignada", "Diagnosticada", "Completada", "Declinada"],
-    default: "Recibida",
   },
 });
 

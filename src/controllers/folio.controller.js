@@ -92,6 +92,7 @@ export const obtenerUltimoFolioCounterInforme = async (req, res) => {
     // const folioInforme = `${currentYear}/${currentMonth}/${counterInforme
     //   .toString()
     //   .padStart(4, "0")}`;
+    
     const folioInforme = `${counterInforme.toString().padStart(4, "0")}`;
 
     // Enviar la respuesta con el nuevo folio

@@ -1,4 +1,5 @@
 import Solicitud from "../models/solicitud.modal.js";
+import Estados from "../models/estados.modal.js";
 
 export const abonarSolicitud = async (req, res) => {
   try {
@@ -12,6 +13,10 @@ export const abonarSolicitud = async (req, res) => {
     if (!solicitudExistente) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
+    // const estado = await Estados.findOne({ id: 1 });
+    const estado2 = await Estados.findOne({ id: 2 });
+    const estado3 = await Estados.findOne({ id: 3 });
+    const estado4 = await Estados.findOne({ id: 4 });
 
     let abonoRealizado = false;
     let allItemsCompleted = true;
@@ -58,11 +63,15 @@ export const abonarSolicitud = async (req, res) => {
     }
 
     // Cambiar estado si es necesario
-    if (abonoRealizado && solicitudExistente.estado === "Pendiente") {
-      solicitudExistente.estado = "Diagnosticada";
+    if (abonoRealizado && solicitudExistente.estado.equals(estado2._id)) {
+      solicitudExistente.estado = estado3._id;
+      estado3.cantidadTotal = (estado3.cantidadTotal || 0) + 1;
+      await estado3.save();
     }
     if (allItemsCompleted) {
-      solicitudExistente.estado = "Atendida";
+      solicitudExistente.estado = estado4._id;
+      estado4.cantidadTotal = (estado4.cantidadTotal || 0) + 1;
+      await estado4.save();
     }
 
     // Guardar la solicitud actualizada

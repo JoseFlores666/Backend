@@ -49,9 +49,7 @@ export const editarFirma = async (req, res) => {
     const { id } = req.params;
     const { solicitante, jefeInmediato, direccion, rectoria } = req.body;
 
-    if (!solicitante || !jefeInmediato || !direccion || !rectoria) {
-      return res.status(400).json({ mensaje: "Todos los campos son requeridos" });
-    }
+   
     const firmaEditada = await Firma.findByIdAndUpdate(
       id,
       {

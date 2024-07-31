@@ -46,9 +46,8 @@ const solicitudSchema = new mongoose.Schema({
     ref: "User",
   },
   estado: {
-    type: String,
-    enum: ["Pendiente", "Asignada", "Diagnosticada", "Atendida", "Rechazada"],
-    default: "Pendiente",
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Estados",
   },
 });
 

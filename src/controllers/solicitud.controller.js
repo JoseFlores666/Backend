@@ -1,4 +1,5 @@
 import Solicitud from "../models/solicitud.modal.js";
+import Estados from "../models/estados.modal.js";
 
 export const getTodasSolicitudes = async (req, res) => {
   try {
@@ -9,6 +10,10 @@ export const getTodasSolicitudes = async (req, res) => {
       })
       .populate({
         path: "actividades", // Campo de referencia a la colección de actividades en el esquema de Solicitud
+        select: "nombre", // Selecciona solo el campo nombre de la actividad
+      })
+      .populate({
+        path: "estado", // Campo de referencia a la colección de actividades en el esquema de Solicitud
         select: "nombre", // Selecciona solo el campo nombre de la actividad
       })
       .lean(); //permite modificar los datos directamente sin afectar la base de datos
@@ -36,6 +41,8 @@ export const crearUnaSolicitud = async (req, res) => {
       items,
     } = req.body;
 
+    const estado = await Estados.findOne({ id: 1 });
+
     const nuevaSolicitud = new Solicitud({
       tipoSuministro: suministro,
       procesoClave: pc,
@@ -46,7 +53,11 @@ export const crearUnaSolicitud = async (req, res) => {
       justificacionAdquisicion: justificacion,
       user: id,
       suministros: items,
+      estado: estado._id,
     });
+
+    estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
+    await estado.save();
 
     await nuevaSolicitud.save();
 
@@ -59,10 +70,22 @@ export const crearUnaSolicitud = async (req, res) => {
 
 export const eliminarUnaSolicitud = async (req, res) => {
   try {
-    const solicitud = await Solicitud.findByIdAndDelete(req.params.id);
+    const solicitud = await Solicitud.findById(req.params.id).populate({
+      path: "estado",
+      select: "id nombre cantidadTotal",
+    });
+
     if (!solicitud) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
+
+    const estado = await Estados.findOne({ id: solicitud.estado.id });
+
+    await Solicitud.findByIdAndDelete(req.params.id);
+
+    estado.cantidadTotal = (estado.cantidadTotal || 0) - 1;
+    await estado.save();
+
     res.status(204).send();
   } catch (error) {
     console.error("Error al eliminar solicitud:", error);
@@ -72,23 +95,16 @@ export const eliminarUnaSolicitud = async (req, res) => {
 
 export const verSolicitudesPorEstado = async (req, res) => {
   try {
-    const { datosSolicitud } = req.params;
-    const estadosValidos = [
-      "Pendiente",
-      "Asignada",
-      "Diagnosticada",
-      "Atendida",
-      "Rechazada",
-    ];
-    if (!estadosValidos.includes(estado)) {
+    const { estadoId } = req.params;
+    const estadoNumero = Number(estadoId);
+
+    // Verificar si la conversión a número fue exitosa (si es un número en tu caso)
+    if (isNaN(estadoNumero)) {
       return res.status(400).json({
-        mensaje: `Estado inválido. Debe ser uno de los siguientes: ${estadosValidos.join(
-          ", "
-        )}`,
+        mensaje: "ID de estado inválido. Debe ser un número.",
       });
     }
-
-    const solicitudes = await Solicitud.find({ estado });
+    const solicitudes = await Solicitud.find({ estado: estadoId });
 
     if (solicitudes.length === 0) {
       return res.status(404).json({
@@ -103,23 +119,14 @@ export const verSolicitudesPorEstado = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
+
 export const editarUnaSolicitud = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const {
-      folioExterno,
-      suministro,
-      pc,
-      proyecto,
-      actividad,
-      fecha,
-      justificacion,
-      items,
-      estado,
-    } = req.body;
+    const { suministro, pc, proyecto, actividad, fecha, justificacion, items } =
+      req.body;
 
-    // Busca la solicitud existente por su ID
     const soli = await Solicitud.findById(id);
     if (!soli) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
@@ -134,11 +141,6 @@ export const editarUnaSolicitud = async (req, res) => {
     soli.suministros = items;
     soli.user = id;
 
-    if (estado && folioExterno) {
-      soli.estado = estado;
-      soli.folioExterno = folioExterno;
-    }
-
     await soli.save();
 
     res.json(soli);
@@ -152,9 +154,10 @@ export const editarSolicitudFolioExterno = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { folioExterno, estado } = req.body;
-    console.log(req.body);
+    const { folioExterno } = req.body;
+
     const soli = await Solicitud.findById(id);
+
     if (!soli) {
       return res.status(500).json({ mensaje: "Solicitud no encontrada" });
     }
@@ -162,17 +165,19 @@ export const editarSolicitudFolioExterno = async (req, res) => {
       return res.status(500).json({ mensaje: " Error folio duplicado" });
     }
 
-    console.log(soli.estado);
-    if (soli.estado === "Pendiente") {
-      soli.estado = estado;
+    const estado = await Estados.findOne({ id: 2 });
+
+    if (folioExterno && estado) {
+      soli.folioExterno = folioExterno;
+      soli.estado = estado._id;
+
+      estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
+      await estado.save();
+      await soli.save();
+
+      res.json(soli);
+      console.log("Solicitud actualizada exitosamente");
     }
-
-    soli.folioExterno = folioExterno;
-
-    await soli.save();
-
-    res.json(soli);
-    console.log("Solicitud actualizada exitosamente");
   } catch (error) {
     console.error("Error al actualizar la solicitud:", error);
     res.status(500).json({ error: "Error interno del servidor" });
@@ -182,15 +187,17 @@ export const editarSolicitudFolioExterno = async (req, res) => {
 export const editarSolicitudEstado = async (req, res) => {
   try {
     const { id } = req.params;
-    const estado = "Rechazada";
 
     const soli = await Solicitud.findById(id);
 
     if (!soli) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
+    const estado = await Estados.findOne({ id: 5 });
 
-    soli.estado = estado;
+    soli.estado = estado._id;
+    estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
+    await estado.save();
 
     await soli.save();
 
@@ -208,12 +215,16 @@ export const verUnaSolicitudPorId = async (req, res) => {
 
     const solicitud = await Solicitud.findById(id)
       .populate({
-        path: "proyecto", // Campo de referencia a la colección de proyectos en el esquema de Solicitud
-        select: "nombre", // Selecciona solo el campo nombre del proyecto
+        path: "proyecto",
+        select: "nombre",
       })
       .populate({
-        path: "actividades", // Campo de referencia a la colección de actividades en el esquema de Solicitud
-        select: "nombre", // Selecciona solo el campo nombre de la actividad
+        path: "actividades",
+        select: "nombre",
+      })
+      .populate({
+        path: "estado",
+        select: "nombre",
       });
 
     if (!solicitud) {
