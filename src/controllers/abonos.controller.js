@@ -18,6 +18,7 @@ export const abonarSolicitud = async (req, res) => {
 
     let abonoRealizado = false;
     let allItemsCompleted = true;
+    let numeroTotalDeEntregas = 0; // Inicializamos el total de entregas
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -37,7 +38,11 @@ export const abonarSolicitud = async (req, res) => {
           if (nuevaCantidadAcumulada <= suministro.cantidad) {
             suministro.cantidadAcumulada = nuevaCantidadAcumulada;
             suministro.cantidadEntregada = 0;
-            suministro.NumeroDeEntregas += 1;
+            suministro.NumeroDeEntregas =
+              (suministro.NumeroDeEntregas || 0) + 1;
+
+            // Sumamos al total de entregas
+            numeroTotalDeEntregas += suministro.NumeroDeEntregas;
 
             if (suministro.NumeroDeEntregas > 0) {
               abonoRealizado = true;
@@ -75,6 +80,7 @@ export const abonarSolicitud = async (req, res) => {
     await solicitudExistente.save();
 
     let descripcionDetallada = "";
+    let numeroDeEntrega = "";
 
     items.forEach((item, index) => {
       const cantidadEntregada = parseInt(item.cantidadEntregada, 10) || 0;
@@ -84,20 +90,18 @@ export const abonarSolicitud = async (req, res) => {
       const descripcion = item.descripcion
         ? item.descripcion.trim()
         : "descripción no especificada";
-      const numeroDeEntregas = item.NumeroDeEntregas || 0;
+      const numeroDeEntregas =
+        solicitudExistente.suministros[index].NumeroDeEntregas || 0;
 
       if (cantidadEntregada > 0) {
-        descripcionDetallada += `${descripcion} se entregaron: ${cantidadEntregada} unides por ${unidad} (Total entregas: ${numeroDeEntregas})`;
-
+        descripcionDetallada += `Producto: ${descripcion}, Entregas realizadas: ${numeroDeEntregas}, Cantidad entregada: ${cantidadEntregada} ${unidad}.`;
+        numeroDeEntrega += `Producto: ${descripcion}, Entregas realizadas: ${numeroDeEntregas}`;
         if (index < items.length - 1) {
-          descripcionDetallada += " y tambien se entrego ";
+          descripcionDetallada += " ";
+          numeroDeEntrega += " ";
         }
       }
     });
-
-    if (items.length > 1) {
-      descripcionDetallada = descripcionDetallada.replace(/ y tambien se entrego $/, "\n");
-    }
 
     const historial = new HistorialSoli({
       user: user.id,
@@ -105,9 +109,9 @@ export const abonarSolicitud = async (req, res) => {
       hora: new Date().toLocaleTimeString(),
       numeroDeSolicitud: solicitudExistente._id,
       folio: solicitudExistente.folio,
-      numeroDeEntrega: descripcionDetallada,
-      descripcion: `El usuario ${user.username} abono la solicitud `,
-      accion: "Realizo una pequeñaentrega del material en la solicitud",
+      numeroDeEntrega: numeroDeEntrega,
+      descripcion: `El usuario ${user.username} abonó la solicitud con los siguientes productos: ${descripcionDetallada}`,
+      accion: "Entrega de materiales",
     });
 
     await historial.save();
