@@ -14,6 +14,7 @@ import api_keyrouter from "./routes/api_key.routes.js";
 import historialInput from "./routes/historialInput.routes.js";
 import tecnicoroutes from "./routes/tecnico.routes.js";
 import estadosRouter from "./routes/estados.routes.js";
+import historialSoliRoutes from "./routes/historialSoli.routes.js";
 import bodyParser from "body-parser";
 import { FRONTEND_URL } from "./config.js";
 
@@ -43,7 +44,8 @@ app.use("/api/firmas", firmasrouter);
 app.use("/api/auth", authRoutes);
 app.use("/api/historialInput", historialInput);
 app.use("/api/tecnicos", tecnicoroutes);
-app.use("/api/estados",estadosRouter)
+app.use("/api/estados", estadosRouter);
+app.use("/api/hisorialSolicitud", historialSoliRoutes);
 
 if (process.env.NODE_ENV === "production") {
   const path = await import("path");

@@ -84,7 +84,7 @@ export const crearUnaSolicitud = async (req, res) => {
 
 export const eliminarUnaSolicitud = async (req, res) => {
   try {
-    const { user } = req.body; 
+    const { user } = req.body;
     console.log(req.body);
     const solicitud = await Solicitud.findById(req.params.id).populate({
       path: "estado",
@@ -156,8 +156,16 @@ export const editarUnaSolicitud = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { suministro, pc, proyecto, actividad, fecha, justificacion, items } =
-      req.body;
+    const {
+      suministro,
+      pc,
+      proyecto,
+      actividad,
+      user,
+      fecha,
+      justificacion,
+      items,
+    } = req.body;
 
     const soli = await Solicitud.findById(id);
     if (!soli) {
@@ -171,9 +179,23 @@ export const editarUnaSolicitud = async (req, res) => {
     soli.fecha = fecha;
     soli.justificacionAdquisicion = justificacion;
     soli.suministros = items;
-    soli.user = id;
+    soli.user = user.id;
 
     await soli.save();
+
+    console.log(user);
+    const historial = new HistorialSoli({
+      user: user.id,
+      fecha: new Date(),
+      hora: new Date().toLocaleTimeString(),
+      numeroDeSolicitud: soli._id,
+      folio: soli.folio,
+      numeroDeEntrega: soli.numeroDeEntrega || "",
+      descripcion: `El usuario ${user.username} actualizo la solicitud:`,
+      accion: "Actualizacion de la solicitud",
+    });
+
+    await historial.save();
 
     res.json(soli);
     console.log("Solicitud actualizada exitosamente");
@@ -220,18 +242,35 @@ export const editarSolicitudEstado = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const { user } = req.body;
+
     const soli = await Solicitud.findById(id);
 
     if (!soli) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
+
     const estado = await Estados.findOne({ id: 5 });
 
     soli.estado = estado._id;
     estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
-    await estado.save();
 
+    await estado.save();
     await soli.save();
+
+    console.log(user);
+    const historial = new HistorialSoli({
+      user: user.id,
+      fecha: new Date(),
+      hora: new Date().toLocaleTimeString(),
+      numeroDeSolicitud: soli._id,
+      folio: soli.folio,
+      numeroDeEntrega: soli.numeroDeEntrega || "",
+      descripcion: `El usuario ${user.username} rechazo esta solicitud:`,
+      accion: "Rechazo de la solicitud",
+    });
+
+    await historial.save();
 
     res.status(200).json(soli);
     console.log("Solicitud actualizada exitosamente");

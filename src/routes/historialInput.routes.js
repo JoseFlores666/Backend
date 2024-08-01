@@ -6,4 +6,7 @@ const router = Router();
 router.get("/", verTodosInformes);
 router.get("/historialSoli", verTodasSoli);
 
+
+
+
 export default router;
