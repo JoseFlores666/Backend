@@ -94,7 +94,7 @@ export const abonarSolicitud = async (req, res) => {
         solicitudExistente.suministros[index].NumeroDeEntregas || 0;
 
       if (cantidadEntregada > 0) {
-        descripcionDetallada += `Producto: ${descripcion}, Entregas realizadas: ${numeroDeEntregas}, Cantidad entregada: ${cantidadEntregada} ${unidad}.`;
+        descripcionDetallada += `Producto: ${descripcion}, Total de entregas: ${numeroDeEntregas}, Cantidad entregada: ${cantidadEntregada} ${unidad}.`;
         numeroDeEntrega += `Producto: ${descripcion}, Entregas realizadas: ${numeroDeEntregas}`;
         if (index < items.length - 1) {
           descripcionDetallada += " ";

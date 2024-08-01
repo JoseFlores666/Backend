@@ -95,20 +95,17 @@ export const eliminarUnaSolicitud = async (req, res) => {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    const id = user.id;
-    console.log(id);
-
     const estado = await Estados.findOne({ id: solicitud.estado.id });
 
     const historial = new HistorialSoli({
-      user: id,
+      user: user.id,
       fecha: new Date(),
       hora: new Date().toLocaleTimeString(),
       numeroDeSolicitud: solicitud._id,
       folio: solicitud.folio, // Verifica que 'folio' esté en el modelo de Solicitud
       numeroDeEntrega: solicitud.numeroDeEntrega || "", // Asegúrate de que este campo esté en el modelo de Solicitud
       descripcion: `El usuario ${user.username} Elimino la solicitud:`,
-      accion: "Eliminacion de la solicitud",
+      accion: "Eliminación de la solicitud",
     });
 
     await historial.save();
@@ -192,7 +189,7 @@ export const editarUnaSolicitud = async (req, res) => {
       folio: soli.folio,
       numeroDeEntrega: soli.numeroDeEntrega || "",
       descripcion: `El usuario ${user.username} actualizo la solicitud:`,
-      accion: "Actualizacion de la solicitud",
+      accion: "Actualización de la solicitud",
     });
 
     await historial.save();
@@ -209,14 +206,11 @@ export const editarSolicitudFolioExterno = async (req, res) => {
     const { id } = req.params;
 
     const { folioExterno, user } = req.body;
-
+    console.log(user);
     const soli = await Solicitud.findById(id);
 
     if (!soli) {
       return res.status(500).json({ mensaje: "Solicitud no encontrada" });
-    }
-    if (soli.folioExterno === folioExterno) {
-      return res.status(500).json({ mensaje: " Error folio duplicado" });
     }
 
     const estado = await Estados.findOne({ id: 2 });
@@ -238,7 +232,7 @@ export const editarSolicitudFolioExterno = async (req, res) => {
         folio: soli.folio,
         numeroDeEntrega: soli.numeroDeEntrega || "",
         descripcion: `El usuario ${user.username} asino un folio a la solicitud:`,
-        accion: "Asignacion del folio",
+        accion: "Asignación del folio",
       });
 
       await historial.save();
