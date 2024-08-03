@@ -1,4 +1,5 @@
 import Actividad from "../models/actividad.modal.js";
+import Proyecto from "../models/proyecto.modal.js";
 
 export const crearActividad = async (req, res) => {
   try {
@@ -40,36 +41,57 @@ export const obtenerActividadesPorId = async (req, res) => {
 
 export const actualizarActividad = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const { nombre, descripcion } = req.body;
 
     const actividadActualizada = await Actividad.findByIdAndUpdate(
       id,
       { nombre, descripcion },
-      { new: true }  // Devuelve el documento actualizado
+      { new: true } // Devuelve el documento actualizado
     );
 
     if (!actividadActualizada) {
       return res.status(404).json({ mensaje: "Actividad no encontrada" });
     }
 
-    res.json({ mensaje: "Actividad actualizada correctamente", actividad: actividadActualizada });
+    res.json({
+      mensaje: "Actividad actualizada correctamente",
+      actividad: actividadActualizada,
+    });
   } catch (error) {
     console.error("Error al actualizar actividad:", error);
-    res.status(500).json({ message: "Error al actualizar la actividad", error: error.message });
+    res.status(500).json({
+      message: "Error al actualizar la actividad",
+      error: error.message,
+    });
   }
 };
 export const eliminarActividad = async (req, res) => {
   try {
-    const actividadEliminada = await Actividad.findByIdAndDelete(req.params.id);
-    if (!actividadEliminada) {
+    const { id } = req.params;
+
+    const actividad = await Actividad.findById(id);
+    if (!actividad) {
       return res.status(404).json({ mensaje: "Actividad no encontrada" });
     }
+
+    const proyectos = await Proyecto.find({ actividades: id });
+
+    for (let proyecto of proyectos) {
+      proyecto.actividades = proyecto.actividades.filter(
+        (actividadId) => actividadId.toString() !== id
+      );
+      await proyecto.save();
+    }
+
+    await Actividad.findByIdAndDelete(id);
+
     res.status(204).send();
   } catch (error) {
     console.error("Error al eliminar actividad:", error);
-    res
-      .status(500)
-      .json({ message: "Error al crear la actividad", error: error.message });
+    res.status(500).json({
+      message: "Error al eliminar la actividad",
+      error: error.message,
+    });
   }
 };

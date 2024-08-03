@@ -10,6 +10,8 @@ import {
   getActSinAsignar,
   asignarActividadProyec,
   ProyectCrearActYAsignarle,
+  editarProyecto,
+  desenlazarActividadProyec,
 } from "../controllers/proyect.controller.js";
 
 const router = Router();
@@ -27,6 +29,12 @@ router.post("/", auth, crearProyecto);
 router.post("/ProyectCrearActYAsignarle/:id", auth, ProyectCrearActYAsignarle);
 
 router.put("/asignarActividadProyect/:id", auth, asignarActividadProyec);
+router.put(
+  "/editarProyecto/:id",
+  auth,
+  editarProyecto
+);
+router.put("/desenlazarActividadProyec/:id", auth, desenlazarActividadProyec);
 
 router.delete("/:id", auth, eliminarProyecto);
 

@@ -23,8 +23,11 @@ export const crearProyecto = async (req, res) => {
 export const asignarActividadProyec = async (req, res) => {
   try {
     const { id } = req.params;
-    const { iDActividades } = req.body;
+    const { idActividades } = req.body;
     console.log(req.body);
+
+    // Asegúrate de que idActividades sea un array
+    const ids = Array.isArray(idActividades) ? idActividades : [idActividades];
 
     const proyecto = await Proyecto.findById(id);
 
@@ -33,28 +36,32 @@ export const asignarActividadProyec = async (req, res) => {
     }
 
     // Encuentra las actividades por sus IDs
-    const actividades = await Actividad.find({ _id: { $in: iDActividades } });
-    if (actividades.length !== iDActividades.length) {
+    const actividades = await Actividad.find({ _id: { $in: ids } });
+    if (actividades.length !== ids.length) {
       return res
         .status(404)
-        .json({ error: "Una o más actividades no se encontrarón" });
+        .json({ error: "Una o más actividades no se encontraron" });
     }
 
-    // Asigna las actividades al proyecto
-    proyecto.actividades.push(...actividades.map((act) => act._id));
+    // Asigna las actividades al proyecto (sin duplicados)
+    ids.forEach((actId) => {
+      if (!proyecto.actividades.includes(actId)) {
+        proyecto.actividades.push(actId);
+      }
+    });
 
     await proyecto.save();
     res
       .status(201)
       .json({ mensaje: "Actividades asignadas al proyecto con éxito" });
   } catch (error) {
-    console.error("Error al asignar un proyecto:", error);
-    res
-      .status(500)
-      .json({ message: "Error al asignar un proyecto", error: error.message });
+    console.error("Error al asignar actividades al proyecto:", error);
+    res.status(500).json({
+      message: "Error al asignar actividades al proyecto",
+      error: error.message,
+    });
   }
 };
-
 export const obtenerProyectos = async (req, res) => {
   try {
     const proyectos = await Proyecto.find().populate({
@@ -124,7 +131,7 @@ export const obtenerProyectoYActividades = async (req, res) => {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
-    res.json(proyecto);
+    res.status(200).json({ proyecto });
   } catch (error) {
     console.error("Error al obtener proyecto con actividades:", error);
     res.status(500).json({
@@ -229,6 +236,77 @@ export const ProyectCrearActYAsignarle = async (req, res) => {
     console.error("Error al crear y asignar actividades:", error);
     res.status(500).json({
       message: "Error al crear y asignar actividades",
+      error: error.message,
+    });
+  }
+};
+
+export const editarProyecto = async (req, res) => {
+  const { id } = req.params;
+  const { nombre } = req.body; // actividades será un array de objetos {id, nombre, descripcion}
+
+  console.log(req.body);
+
+  try {
+    // 1. Actualizar el nombre del proyecto si es necesario
+    const proyect = await Proyecto.findById(id);
+
+    if (!proyect) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    if (nombre !== undefined && nombre.trim() !== "") {
+      proyect.nombre = nombre;
+
+      await proyect.save();
+
+      res.status(200).json({
+        mensaje: "Proyecto actualizado con éxito",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al actualizar el proyecto", error });
+  }
+};
+
+export const desenlazarActividadProyec = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { idActividad } = req.body;
+    console.log(req.body);
+
+    // Buscar el proyecto
+    const proyecto = await Proyecto.findById(id);
+    if (!proyecto) {
+      return res.status(404).json({ error: "Proyecto no encontrado" });
+    }
+
+    // Verificar si la actividad está en el proyecto
+    const actividadExiste = proyecto.actividades.some(
+      (actId) => actId.toString() === idActividad
+    );
+    if (!actividadExiste) {
+      return res
+        .status(404)
+        .json({ error: "Actividad no encontrada en el proyecto" });
+    }
+
+    // Eliminar la actividad del array de actividades del proyecto
+    proyecto.actividades = proyecto.actividades.filter(
+      (actId) => actId.toString() !== idActividad
+    );
+
+    // Guardar el proyecto actualizado
+    await proyecto.save();
+
+    res
+      .status(200)
+      .json({ mensaje: "Actividad desenlazada del proyecto con éxito" });
+  } catch (error) {
+    console.error("Error al desenlazar actividad del proyecto:", error);
+    res.status(500).json({
+      message: "Error al desenlazar actividad del proyecto",
       error: error.message,
     });
   }
