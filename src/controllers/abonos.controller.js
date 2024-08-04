@@ -7,6 +7,7 @@ export const abonarSolicitud = async (req, res) => {
     const { id } = req.params;
     const { items, user } = req.body;
 
+    console.log(items);
     const solicitudExistente = await Solicitud.findById(id);
     if (!solicitudExistente) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
@@ -41,13 +42,13 @@ export const abonarSolicitud = async (req, res) => {
             suministro.NumeroDeEntregas =
               (suministro.NumeroDeEntregas || 0) + 1;
 
-            // Sumamos al total de entregas
             numeroTotalDeEntregas += suministro.NumeroDeEntregas;
 
             if (suministro.NumeroDeEntregas > 0) {
               abonoRealizado = true;
             }
 
+            // Ajuste en la condición para determinar si un ítem está completado
             if (suministro.cantidadAcumulada < suministro.cantidad) {
               allItemsCompleted = false;
             }
@@ -56,6 +57,9 @@ export const abonarSolicitud = async (req, res) => {
               error: `La cantidad acumulada no puede exceder la cantidad requerida para el suministro ${suministro._id}.`,
             });
           }
+        } else if (suministro.cantidadAcumulada < suministro.cantidad) {
+          // Este else se asegura de que si no hay cantidad entregada y la acumulada no es suficiente, la solicitud no se marca como completa.
+          allItemsCompleted = false;
         }
       } else {
         return res.status(404).json({
