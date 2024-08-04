@@ -17,18 +17,18 @@ import fileUpload from "express-fileupload";
 const router = Router();
 
 router.get("/", auth, verTodosInformes);
-router.post("/llenadoDEPInforme/:id", llenadoDEPInforme);
-router.post("/", crearInforme);
-
-router.put("/:id", auth, editarInforme);
-router.put(
-  "/AsignarTecnico/:id",
+router.post(
+  "/llenadoDEPInforme/:id",
   fileUpload({
     useTempFiles: true,
     tempFileDir: "./uploads",
   }),
-  AsignarTecnicoInforme
+  llenadoDEPInforme
 );
+router.post("/", crearInforme);
+
+router.put("/:id", auth, editarInforme);
+router.put("/AsignarTecnico/:id", AsignarTecnicoInforme);
 router.put("/editarEstadoInforme/:id", editarEstadoDelInforme);
 router.put(
   "/editarObservaciones/:id",

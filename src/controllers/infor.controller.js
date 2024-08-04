@@ -7,10 +7,12 @@ import fs from "fs-extra";
 export const verTodosInformes = async (req, res) => {
   try {
     const informes = await InformeTecnico.find();
-    res.json(informes);
+    res.status(200).json(informes);
   } catch (error) {
     console.error("Error al obtener informes técnicos:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -50,10 +52,14 @@ export const crearInforme = async (req, res) => {
 
     await nuevoInforme.save();
 
-    res.status(201).json({ mensaje: "Informe técnico creado correctamente" });
+    res.status(201).json({
+      mensaje: "Informe técnico creado correctamente",
+    });
   } catch (error) {
     console.error("Error al crear informe técnico:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 export const verInformePorId = async (req, res) => {
@@ -62,10 +68,12 @@ export const verInformePorId = async (req, res) => {
     if (!informe) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
-    res.json(informe);
+    res.status(200).json(informe);
   } catch (error) {
     console.error("Error al obtener informe técnico por ID:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -74,7 +82,7 @@ export const eliminarInforme = async (req, res) => {
     const myInforme = await InformeTecnico.findByIdAndDelete(req.params.id);
 
     if (!myInforme) {
-      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+      return res.status(404).json({ message: "Informe técnico no encontrado" });
     }
 
     if (myInforme.informe.imagenes?.length > 0) {
@@ -84,10 +92,15 @@ export const eliminarInforme = async (req, res) => {
       }
     }
 
-    res.status(204).send();
+    res
+      .status(204)
+      .json({ mensaje: "Informe técnico eliminado con éxito" })
+      .send();
   } catch (error) {
     console.error("Error al eliminar informe técnico:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -102,57 +115,97 @@ export const editarInforme = async (req, res) => {
     if (!informeModificado) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
-    res.json({
+    res.status(200).json({
       mensaje: "Informe técnico modificado correctamente",
       informe: informeModificado,
     });
   } catch (error) {
     console.error("Error al modificar informe técnico:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 export const llenadoDEPInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { folio, fechaOrden, items, observaciones, user } = req.body;
+    const items = [];
+    let index = 0;
+    while (req.body[`items[${index}].cantidad`]) {
+      items.push({
+        cantidad: req.body[`items[${index}].cantidad`],
+        descripcion: req.body[`items[${index}].descripcion`],
+      });
+      index++;
+    }
 
     console.log("Request Body:", req.body);
-    if (!Array.isArray(items)) {
-      return res
-        .status(400)
-        .json({ error: "El campo 'items' debe ser un array" });
-    }
+    console.log("Items:", items);
 
     const myinforme = await InformeTecnico.findById(id);
     if (!myinforme) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    myinforme.folioExterno = folio;
-    myinforme.solicitud.fechaAtencion = fechaOrden;
-
     myinforme.solicitud.insumosSolicitados = items.map((item) => ({
       cantidad: item.cantidad,
       descripcion: item.descripcion,
     }));
 
-    myinforme.solicitud.Observacionestecnicas = observaciones;
-    myinforme.user = user;
+    const imagenes = [];
+    if (req.files) {
+      const fileKeys = Object.keys(req.files);
+
+      for (const key of fileKeys) {
+        const file = req.files[key];
+
+        try {
+          // Subir la imagen y obtener los datos de la imagen subida
+          const result = await uploadImage(file.tempFilePath || file.path);
+
+          imagenes.push({
+            public_id: result.public_id,
+            secure_url: result.secure_url,
+          });
+
+          // Elimina el archivo temporal después de subirlo
+          await fs.unlink(file.tempFilePath || file.path);
+        } catch (error) {
+          console.error("Error al procesar la imagen:", error);
+          return res.status(500).json({ error: "Error al procesar la imagen" });
+        }
+      }
+    }
+
+    if (imagenes.length > 0) {
+      myinforme.informe.imagenes = [
+        ...myinforme.informe.imagenes,
+        ...imagenes,
+      ];
+    }
 
     await myinforme.save();
-    res.status(201).json();
+
+    res
+      .status(201)
+      .json({ mensaje: "Datos del informe llenados correctamente" });
   } catch (error) {
-    console.error("Error con el informe técnico:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.log("Error al asignar técnico:", error);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
 export const AsignarTecnicoInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { idTecnico } = req.body;
+    const {idTecnico} = req.body;
 
-    const Informe = await InformeTecnico.findByIdAndUpdate(id);
+    console.log("ID del informe:", id);
+    console.log("ID del técnico:", idTecnico);
+
+    const Informe = await InformeTecnico.findById(id);
     if (!Informe) {
       return res.status(404).json({ mensaje: "Informe no encontrada" });
     }
@@ -182,13 +235,15 @@ export const AsignarTecnicoInforme = async (req, res) => {
         }
       }
     }
-
     if (imagenes.length > 0) {
-      Informe.informe.imagenes = imagenes;
+      Informe.informe.imagenes = [
+        ...Informe.informe.imagenes,
+        ...imagenes,
+      ];
     }
 
     await Informe.save();
-    res.json({ mensaje: "Creado perfil del técnico creado con exito" });
+    res.json({ mensaje: "Técnico asignado con exito" });
   } catch (error) {
     console.log("error al consultar al crear el perfil del tecnico");
     res.status(500).json({ error: "Error interno del servidor" });
@@ -205,13 +260,12 @@ export const editarEstadoDelInforme = async (req, res) => {
     if (!informe) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
-
     if (informe.estado === "Recibida") {
       informe.estado = estado;
       await informe.save();
-      res.status(200).json({
-        mensaje: "El informe ha sido declinado existosamente",
-      });
+      res
+        .status(200)
+        .json({ mensaje: "El informe ha sido declinado exitosamente" });
     } else {
       res.status(400).json({
         mensaje: "Error, el informe ya ha sido asignado a un técnico",
@@ -219,9 +273,12 @@ export const editarEstadoDelInforme = async (req, res) => {
     }
   } catch (error) {
     console.error("Error al actualizar el informe:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
+
 export const verImagenesInformePorId = async (req, res) => {
   try {
     const informe = await InformeTecnico.findById(req.params.id).select(
@@ -231,10 +288,12 @@ export const verImagenesInformePorId = async (req, res) => {
     if (!informe) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
-    res.json(informe.informe.imagenes);
+    res.status(200).json(informe.informe.imagenes);
   } catch (error) {
     console.error("Error al obtener informe técnico por ID:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 export const editarObservaciones = async (req, res) => {
@@ -289,11 +348,13 @@ export const editarObservaciones = async (req, res) => {
 
     await informeEditado.save();
 
-    res
-      .status(200)
-      .json({ mensaje: "Observaciones y imágenes agregadas exitosamente" });
+    res.status(200).json({
+      mensaje: "Observaciones agregadas correctamente",
+    });
   } catch (error) {
-    console.error("Error al editar observaciones del informe:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error al editar observaciones:", error);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };

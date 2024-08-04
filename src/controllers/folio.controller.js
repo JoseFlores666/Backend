@@ -54,51 +54,33 @@ export const obtenerUltimoFolioCounterSoli = async (req, res) => {
 
 export const obtenerUltimoFolioCounterInforme = async (req, res) => {
   try {
-    // Obtener la fecha actual
+    // Buscar el último documento basado en yearInforme y counterInforme
+    const ultimoFolioCounter = await FolioCounter.findOne().sort({
+      yearInforme: -1,
+      counterInforme: -1,
+    });
+
     const now = new Date();
-    const monthNames = [
-      "Enero",
-      "Febrero",
-      "Marzo",
-      "Abril",
-      "Mayo",
-      "Junio",
-      "Julio",
-      "Agosto",
-      "Septiembre",
-      "Octubre",
-      "Noviembre",
-      "Diciembre",
-    ];
-    const currentMonth = monthNames[now.getMonth()];
     const currentYear = now.getFullYear();
 
-    // Buscar el último FolioCounter ordenado por yearInforme, monthInforme y counterInforme
-    const ultimoFolioCounter = await FolioCounter.findOne({
-      yearInforme: currentYear,
-      monthInforme: currentMonth,
-    }).sort({ counterInforme: -1 });
+    let counter;
 
-    let counterInforme;
-
-    // Si existe un último FolioCounter para este mes y año, incrementar el counterInforme
     if (ultimoFolioCounter) {
-      counterInforme = ultimoFolioCounter.counterInforme + 1;
+      // Comparar el año del último documento con el año actual
+      if (ultimoFolioCounter.yearInforme === currentYear) {
+        counter = ultimoFolioCounter.counterInforme + 1;
+      } else {
+        counter = 1; // Si el año es diferente, reiniciar el contador
+      }
     } else {
-      counterInforme = 1;
+      counter = 1; // Si no hay documentos, iniciar el contador en 1
     }
 
-    // Generar el nuevo folio para informes
-    // const folioInforme = `${currentYear}/${currentMonth}/${counterInforme
-    //   .toString()
-    //   .padStart(4, "0")}`;
-    
-    const folioInforme = `${counterInforme.toString().padStart(4, "0")}`;
+    const folio = `${counter.toString().padStart(3, "0")}`; // Formatear el contador con 3 dígitos
 
-    // Enviar la respuesta con el nuevo folio
-    res.json({ folioInforme });
+    res.json({ folio });
   } catch (error) {
-    console.error("Error al obtener el último folio de informe:", error);
+    console.error("Error al obtener el último folio interno:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
