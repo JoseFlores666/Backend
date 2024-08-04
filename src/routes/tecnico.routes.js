@@ -1,14 +1,20 @@
-import { Router } from "express";
-// import { auth } from "../middlewares/auth.middleware";
+import express from "express";
 import {
   verTodosLosTecnicos,
-  crearPerfilTecnico,traeDescripcionTecnInforId
+  crearPerfilTecnico,
+  obtenerTecnicoPorId,
+  traeDescripcionTecnInforId,
+  actualizarTecnico,
+  eliminarTecnico,
 } from "../controllers/tecnicos.controller.js";
 
-const router = Router();
+const router = express.Router();
 
 router.get("/", verTodosLosTecnicos);
-router.get("/Encabezado/:id", traeDescripcionTecnInforId);
-router.post("/crearPerfilTecnico", crearPerfilTecnico);
+router.post("/", crearPerfilTecnico);
+router.get("/:id", obtenerTecnicoPorId);
+router.put("/:id", actualizarTecnico);
+router.delete("/:id", eliminarTecnico);
+router.get("/:id/descripcion", traeDescripcionTecnInforId);
 
 export default router;

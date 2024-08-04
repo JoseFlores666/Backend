@@ -1,51 +1,74 @@
 import Tecnicos from "../models/tecnicos.modal.js";
 import InformeTecnico from "../models/InformeTec.modal.js";
 
+// Obtener todos los técnicos
 export const verTodosLosTecnicos = async (req, res) => {
   try {
     const tecnicos = await Tecnicos.find();
-    res.json(tecnicos);
+    res.status(200).json(tecnicos);
   } catch (error) {
-    console.log("error al consultar la coleccion Técnicos");
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error al obtener técnicos:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al obtener técnicos", error: error.message });
   }
 };
 
+// Crear un nuevo técnico
 export const crearPerfilTecnico = async (req, res) => {
   try {
     const { nombreCompleto, edad, telefono, correo, area } = req.body;
-
-    const tecnico = new Tecnicos({
+    const nuevoTecnico = new Tecnicos({
       nombreCompleto,
       edad,
       telefono,
       correo,
       area,
     });
-    await tecnico.save();
-    res.json({ mensaje: "Creado perfil del técnico creado con exito" });
+    await nuevoTecnico.save();
+    res.status(201).json({ mensaje: "Técnico creado con éxito", nuevoTecnico });
   } catch (error) {
-    console.log("error al consultar al crear el perfil del tecnico");
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error al crear técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al crear técnico", error: error.message });
   }
 };
 
+// Obtener un técnico por ID
+export const obtenerTecnicoPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tecnico = await Tecnicos.findById(id);
+    if (!tecnico) {
+      return res.status(404).json({ mensaje: "Técnico no encontrado" });
+    }
+    res.status(200).json(tecnico);
+  } catch (error) {
+    console.error("Error al obtener técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al obtener técnico", error: error.message });
+  }
+};
+
+// Obtener la descripción del informe técnico por ID
 export const traeDescripcionTecnInforId = async (req, res) => {
   try {
-    // Busca el informe técnico por ID e incluye los campos necesarios
-    const informe = await InformeTecnico.findById(req.params.id)
-      .select("folio informe tecnicos");
+    const informe = await InformeTecnico.findById(req.params.id).select(
+      "folio informe tecnicos"
+    );
 
     if (!informe) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
 
-    // Verifica si hay técnicos asociados al informe
     if (!informe.tecnicos || informe.tecnicos.length === 0) {
-      return res.status(404).json({ mensaje: "No hay técnicos asociados con este informe" });
+      return res
+        .status(404)
+        .json({ mensaje: "No hay técnicos asociados con este informe" });
     }
 
-    // Busca los técnicos asociados al informe
     const tecnicos = await Tecnicos.find({ _id: { $in: informe.tecnicos } });
 
     res.json({
@@ -56,5 +79,47 @@ export const traeDescripcionTecnInforId = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener informe técnico por ID:", error);
     res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+// Actualizar un técnico
+export const actualizarTecnico = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombreCompleto, edad, telefono, correo, area } = req.body;
+    console.log(req.body);
+    const tecnico = await Tecnicos.findById(id);
+    if (!tecnico) {
+      return res.status(404).json({ mensaje: "Técnico no encontrado" });
+    }
+    tecnico.nombreCompleto = nombreCompleto || tecnico.nombreCompleto;
+    tecnico.edad = edad || tecnico.edad;
+    tecnico.telefono = telefono || tecnico.telefono;
+    tecnico.correo = correo || tecnico.correo;
+    tecnico.area = area || tecnico.area;
+    await tecnico.save();
+    res.status(200).json({ mensaje: "Técnico actualizado con éxito", tecnico });
+  } catch (error) {
+    console.error("Error al actualizar técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al actualizar técnico", error: error.message });
+  }
+};
+
+// Eliminar un técnico
+export const eliminarTecnico = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tecnicoEliminado = await Tecnicos.findByIdAndDelete(id);
+    if (!tecnicoEliminado) {
+      return res.status(404).json({ mensaje: "Técnico no encontrado" });
+    }
+    res.status(200).json({ mensaje: "Técnico eliminado con éxito" });
+  } catch (error) {
+    console.error("Error al eliminar técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al eliminar técnico", error: error.message });
   }
 };
