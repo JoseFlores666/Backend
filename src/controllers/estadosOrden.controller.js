@@ -3,7 +3,10 @@ import InformeTecnico from "../models/InformeTec.modal.js";
 
 export const verEstadosOrdenTrabajo = async (req, res) => {
   try {
-    const estados = await OrdenTrabajoEstados.find();
+    const estados = await OrdenTrabajoEstados.find()
+      .populate("informe.estado", "id nombre") // `estado` debe coincidir con el nombre del campo en el esquema
+      .lean();
+
     res.status(200).json(estados);
   } catch (error) {
     console.error("Error al consultar los estados de orden de trabajo:", error);
@@ -16,17 +19,18 @@ export const verEstadosOrdenTrabajo = async (req, res) => {
 
 export const vercantidadTotalOrdenTrabajoEstados = async (req, res) => {
   try {
-    const solicitudes = await InformeTecnico.find()
-      .populate("estado", "nombre")
+    const ordenesDeTrabajo = await InformeTecnico.find()
+      .populate("informe.estado", "id")
       .lean();
+    // Obtén todos los estados
     const estados = await OrdenTrabajoEstados.find().lean();
 
+    // Mapea los estados para contar cuántas solicitudes tienen cada estado asignado
     const conteoEstados = estados.map((estado) => ({
       id: estado.id,
       nombre: estado.nombre,
-      cantidad: solicitudes.filter(
-        (ordenTrabajo) =>
-          ordenTrabajo.estado && ordenTrabajo.estado.nombre === estado.nombre
+      cantidadTotal: ordenesDeTrabajo.filter(
+        (orden) => orden.informe.estado && orden.informe.estado.id === estado.id
       ).length,
     }));
 
@@ -83,11 +87,9 @@ export const actualizarEstadosOrdenTrabajo = async (req, res) => {
       !Array.isArray(estadosActualizados) ||
       estadosActualizados.length !== 5
     ) {
-      return res
-        .status(400)
-        .json({
-          message: "Se requiere un arreglo de 5 estados para actualizar",
-        });
+      return res.status(400).json({
+        message: "Se requiere un arreglo de 5 estados para actualizar",
+      });
     }
 
     await Promise.all(
@@ -102,11 +104,9 @@ export const actualizarEstadosOrdenTrabajo = async (req, res) => {
       "Error al actualizar los estados de orden de trabajo:",
       error
     );
-    res
-      .status(500)
-      .json({
-        message: "Error al actualizar los estados de orden de trabajo",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al actualizar los estados de orden de trabajo",
+      error: error.message,
+    });
   }
 };

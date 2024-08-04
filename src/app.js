@@ -32,7 +32,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/solicitud", solirouter);
 app.use("/api/abono", abonorouter);

@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import FolioCounter from "./folioCounter.modal.js";
 
 const informeTecnicSchema = new mongoose.Schema({
-  folio: String,
   informe: {
+    folio: String,
     Solicita: {
       nombre: String,
       areaSolicitante: String,
@@ -16,46 +16,52 @@ const informeTecnicSchema = new mongoose.Schema({
     tipoDeMantenimiento: String,
     tipoDeTrabajo: String,
     tipoDeSolicitud: String,
-    descripcionDelServicio: String,
-    imagenes: [
-      {
-        public_id: String,
-        secure_url: String,
+    descripcion: String,
+    solicitud: {
+      fechaAtencion: {
+        type: Date,
+        required: false,
       },
-    ],
-  },
-  solicitud: {
-    fechaAtencion: String,
-
-    insumosSolicitados: [
-      {
-        cantidad: Number,
-        descripcion: String,
+      tecnicos: {
+        type: mongoose.Types.ObjectId,
+        ref: "Tecnicos",
       },
-    ],
-    Observacionestecnicas: String,
-  },
-  firmas: {
-    type: mongoose.Types.ObjectId,
-    ref: "Firmas",
-  },
-  user: {
-    type: mongoose.Types.ObjectId,
-    ref: "User",
-  },
-  tecnicos: {
-    type: mongoose.Types.ObjectId,
-    ref: "Tecnicos",
-  },
-  estado: {
-    type: String,
-    required: true,
+      diagnostico: String,
+      imagenes: [
+        {
+          public_id: String,
+          secure_url: String,
+        },
+      ],
+      material: [
+        {
+          fechaFinalizacion: {
+            type: Date,
+            required: false,
+          },
+          cantidad: Number,
+          descripcion: String,
+        },
+      ],
+    },
+    firmas: {
+      type: mongoose.Types.ObjectId,
+      ref: "Firma",
+    },
+    user: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+    estado: {
+      type: mongoose.Types.ObjectId,
+      ref: "OrdenTrabajoEstados", // Este nombre debe coincidir con el nombre del modelo
+    },
   },
 });
 
 informeTecnicSchema.pre("save", async function (next) {
   try {
-    if (!this.folio) {
+    if (!this.informe.folio) {
       const now = new Date();
       const currentYear = now.getFullYear(); // Año actual
 
@@ -79,7 +85,9 @@ informeTecnicSchema.pre("save", async function (next) {
       await folioCounter.save();
 
       // Generar el folio para informes
-      this.folio = `${folioCounter.counterInforme.toString().padStart(4, "0")}`;
+      this.informe.folio = `${folioCounter.counterInforme
+        .toString()
+        .padStart(4, "0")}`;
     }
   } catch (err) {
     console.error("Error in save middleware:", err);
