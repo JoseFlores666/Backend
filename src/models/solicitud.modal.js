@@ -32,8 +32,14 @@ const solicitudSchema = new mongoose.Schema({
   },
   actividades: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Actividad",
+      actividadRef: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Actividad",
+      },
+      nombreActividad: {
+        type: String,
+        required: true,
+      },
     },
   ],
   justificacionAdquisicion: String,

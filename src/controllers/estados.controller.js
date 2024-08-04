@@ -12,18 +12,16 @@ export const verEstados = async (req, res) => {
 };
 export const VercantidadTotal = async (req, res) => {
   try {
-    const solicitudes = await Solicitud.find()
-      .populate("estado", "nombre")
-      .lean();
+    const solicitudes = await Solicitud.find().populate("estado", "id").lean();
 
     const estados = await Estados.find().lean();
 
+    // Mapea los estados para contar cuántas solicitudes tienen cada estado asignado
     const conteoEstados = estados.map((estado) => ({
       id: estado.id,
       nombre: estado.nombre,
-      cantidad: solicitudes.filter(
-        (solicitud) =>
-          solicitud.estado && solicitud.estado.nombre === estado.nombre
+      cantidadTotal: solicitudes.filter(
+        (solicitud) => solicitud.estado && solicitud.estado.id === estado.id
       ).length,
     }));
 
@@ -75,11 +73,9 @@ export const actualizarEstados = async (req, res) => {
       !Array.isArray(estadosActualizados) ||
       estadosActualizados.length !== 5
     ) {
-      return res
-        .status(400)
-        .json({
-          mensaje: "Se requiere un arreglo de 5 estados para actualizar",
-        });
+      return res.status(400).json({
+        mensaje: "Se requiere un arreglo de 5 estados para actualizar",
+      });
     }
 
     // Actualizar cada estado basado en su ID

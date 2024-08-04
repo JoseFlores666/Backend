@@ -10,17 +10,24 @@ export const getTodasSolicitudes = async (req, res) => {
         select: "nombre", // Selecciona solo el campo nombre del proyecto
       })
       .populate({
-        path: "actividades", // Campo de referencia a la colección de actividades en el esquema de Solicitud
+        path: "actividades.actividadRef", // Campo de referencia a la colección de actividades en el esquema de Solicitud
         select: "nombre", // Selecciona solo el campo nombre de la actividad
       })
       .populate({
-        path: "estado", // Campo de referencia a la colección de actividades en el esquema de Solicitud
-        select: "nombre id", // Selecciona solo el campo nombre de la actividad
+        path: "estado", 
+        select: "nombre id", 
       })
-      .lean(); //permite modificar los datos directamente sin afectar la base de datos
+      .lean(); // Permite modificar los datos directamente sin afectar la base de datos
 
     solicitudes.forEach((solicitud) => {
       solicitud.fecha = solicitud.fecha.toLocaleDateString("es-MX");
+      // Reemplazar nombreActividad con nombre de actividad referenciada si está disponible
+      solicitud.actividades = solicitud.actividades.map((actividad) => ({
+        ...actividad,
+        nombreActividad: actividad.actividadRef
+          ? actividad.actividadRef.nombre
+          : actividad.nombreActividad,
+      }));
     });
     res.json(solicitudes);
   } catch (error) {
@@ -35,13 +42,13 @@ export const crearUnaSolicitud = async (req, res) => {
       suministro,
       pc,
       proyecto,
-      actividad,
+      selectedActividad,
       fecha,
       justificacion,
       items,
       user,
     } = req.body;
-    console.log(user);
+    console.log(selectedActividad);
     const id = user.id;
     const estado = await Estados.findOne({ id: 1 });
 
@@ -49,7 +56,12 @@ export const crearUnaSolicitud = async (req, res) => {
       tipoSuministro: suministro,
       procesoClave: pc,
       proyecto,
-      actividades: actividad,
+      actividades: [
+        {
+          actividadRef: selectedActividad.id,
+          nombreActividad: selectedActividad.nombre,
+        },
+      ],
       fecha,
       firmas: "664d5e645db2ce15d4468548",
       justificacionAdquisicion: justificacion,
@@ -58,9 +70,6 @@ export const crearUnaSolicitud = async (req, res) => {
       estado: estado._id,
     });
 
-    estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
-
-    await estado.save();
     await nuevaSolicitud.save();
 
     const historial = new HistorialSoli({
@@ -95,8 +104,6 @@ export const eliminarUnaSolicitud = async (req, res) => {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    const estado = await Estados.findOne({ id: solicitud.estado.id });
-
     const historial = new HistorialSoli({
       user: user.id,
       fecha: new Date(),
@@ -112,9 +119,6 @@ export const eliminarUnaSolicitud = async (req, res) => {
 
     await Solicitud.findByIdAndDelete(req.params.id);
 
-    estado.cantidadTotal = (estado.cantidadTotal || 0) - 1;
-
-    await estado.save();
     res.status(204).send();
   } catch (error) {
     console.error("Error al eliminar solicitud:", error);
@@ -133,6 +137,7 @@ export const verSolicitudesPorEstado = async (req, res) => {
         mensaje: "ID de estado inválido. Debe ser un número.",
       });
     }
+
     const solicitudes = await Solicitud.find({ estado: estadoId });
 
     if (solicitudes.length === 0) {
@@ -157,7 +162,7 @@ export const editarUnaSolicitud = async (req, res) => {
       suministro,
       pc,
       proyecto,
-      actividad,
+      selectedActividad,
       user,
       fecha,
       justificacion,
@@ -172,7 +177,8 @@ export const editarUnaSolicitud = async (req, res) => {
     soli.tipoSuministro = suministro;
     soli.procesoClave = pc;
     soli.proyecto = proyecto;
-    soli.actividades = actividad;
+    soli.actividades.actividadRef = selectedActividad.id;
+    soli.actividades.nombreActividad = selectedActividad.nombre;
     soli.fecha = fecha;
     soli.justificacionAdquisicion = justificacion;
     soli.suministros = items;
@@ -180,7 +186,6 @@ export const editarUnaSolicitud = async (req, res) => {
 
     await soli.save();
 
-    console.log(user);
     const historial = new HistorialSoli({
       user: user.id,
       fecha: new Date(),
@@ -201,6 +206,7 @@ export const editarUnaSolicitud = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
+
 export const editarSolicitudFolioExterno = async (req, res) => {
   try {
     const { id } = req.params;
@@ -219,11 +225,8 @@ export const editarSolicitudFolioExterno = async (req, res) => {
       soli.folioExterno = folioExterno;
       soli.estado = estado._id;
 
-      estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
-      await estado.save();
       await soli.save();
 
-      console.log(user);
       const historial = new HistorialSoli({
         user: user.id,
         fecha: new Date(),
@@ -231,7 +234,7 @@ export const editarSolicitudFolioExterno = async (req, res) => {
         numeroDeSolicitud: soli._id,
         folio: soli.folio,
         numeroDeEntrega: soli.numeroDeEntrega || "",
-        descripcion: `El usuario ${user.username} asino un folio a la solicitud:`,
+        descripcion: `El usuario ${user.username} asignó un folio a la solicitud:`,
         accion: "Asignación del folio",
       });
 
@@ -261,12 +264,9 @@ export const editarSolicitudEstado = async (req, res) => {
     const estado = await Estados.findOne({ id: 5 });
 
     soli.estado = estado._id;
-    estado.cantidadTotal = (estado.cantidadTotal || 0) + 1;
 
-    await estado.save();
     await soli.save();
 
-    console.log(user);
     const historial = new HistorialSoli({
       user: user.id,
       fecha: new Date(),
@@ -274,20 +274,19 @@ export const editarSolicitudEstado = async (req, res) => {
       numeroDeSolicitud: soli._id,
       folio: soli.folio,
       numeroDeEntrega: soli.numeroDeEntrega || "",
-      descripcion: `El usuario ${user.username} rechazo esta solicitud:`,
+      descripcion: `El usuario ${user.username} Rechazó la solicitud:`,
       accion: "Rechazo de la solicitud",
     });
 
     await historial.save();
 
-    res.status(200).json(soli);
+    res.json(soli);
     console.log("Solicitud actualizada exitosamente");
   } catch (error) {
     console.error("Error al actualizar la solicitud:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
-
 export const verUnaSolicitudPorId = async (req, res) => {
   try {
     const id = req.params.id;
@@ -298,17 +297,22 @@ export const verUnaSolicitudPorId = async (req, res) => {
         select: "nombre",
       })
       .populate({
-        path: "actividades",
-        select: "nombre",
-      })
-      .populate({
         path: "estado",
         select: "nombre",
-      });
+      })
+      .lean(); // Usar .lean() para manipular el objeto directamente
 
     if (!solicitud) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
+
+    // Modificar el campo de actividades para incluir nombre de la actividad referenciada
+    solicitud.actividades = solicitud.actividades.map((actividad) => ({
+      ...actividad,
+      nombreActividad: actividad.actividadRef
+        ? actividad.actividadRef.nombre
+        : actividad.nombreActividad,
+    }));
 
     console.log("Búsqueda exitosa");
     res.json(solicitud);
