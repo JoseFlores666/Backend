@@ -88,14 +88,15 @@ export const eliminarInforme = async (req, res) => {
     if (myInforme.informe.imagenes?.length > 0) {
       // Recorre todas las imágenes y elimínalas de Cloudinary
       for (const img of myInforme.informe.imagenes) {
-        await deleteImage(img.public_id);
+        try {
+          await deleteImage(img.public_id);
+        } catch (err) {
+          console.error("Error al eliminar la imagen de Cloudinary:", err);
+        }
       }
     }
 
-    res
-      .status(204)
-      .json({ mensaje: "Informe técnico eliminado con éxito" })
-      .send();
+    res.status(200).json({ mensaje: "Informe técnico eliminado con éxito" });
   } catch (error) {
     console.error("Error al eliminar informe técnico:", error);
     res
@@ -178,10 +179,7 @@ export const llenadoDEPInforme = async (req, res) => {
     }
 
     if (imagenes.length > 0) {
-      myinforme.informe.imagenes = [
-        ...myinforme.informe.imagenes,
-        ...imagenes,
-      ];
+      myinforme.informe.imagenes = [...myinforme.informe.imagenes, ...imagenes];
     }
 
     await myinforme.save();
@@ -200,7 +198,7 @@ export const llenadoDEPInforme = async (req, res) => {
 export const AsignarTecnicoInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const {idTecnico} = req.body;
+    const { idTecnico } = req.body;
 
     console.log("ID del informe:", id);
     console.log("ID del técnico:", idTecnico);
@@ -236,10 +234,7 @@ export const AsignarTecnicoInforme = async (req, res) => {
       }
     }
     if (imagenes.length > 0) {
-      Informe.informe.imagenes = [
-        ...Informe.informe.imagenes,
-        ...imagenes,
-      ];
+      Informe.informe.imagenes = [...Informe.informe.imagenes, ...imagenes];
     }
 
     await Informe.save();
