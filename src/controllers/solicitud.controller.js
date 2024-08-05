@@ -14,8 +14,8 @@ export const getTodasSolicitudes = async (req, res) => {
         select: "nombre", // Selecciona solo el campo nombre de la actividad
       })
       .populate({
-        path: "estado", 
-        select: "nombre id", 
+        path: "estado",
+        select: "nombre id",
       })
       .lean(); // Permite modificar los datos directamente sin afectar la base de datos
 
@@ -48,8 +48,9 @@ export const crearUnaSolicitud = async (req, res) => {
       items,
       user,
     } = req.body;
-    console.log(selectedActividad);
+    console.log(req.body);
     const id = user.id;
+
     const estado = await Estados.findOne({ id: 1 });
 
     const nuevaSolicitud = new Solicitud({
@@ -295,10 +296,10 @@ export const verUnaSolicitudPorId = async (req, res) => {
       .populate({
         path: "proyecto",
         select: "nombre",
-      })
+      }) 
       .populate({
-        path: "estado",
-        select: "nombre",
+        path: "actividades",
+        select: "nombreActividad",
       })
       .lean(); // Usar .lean() para manipular el objeto directamente
 
@@ -312,8 +313,8 @@ export const verUnaSolicitudPorId = async (req, res) => {
       nombreActividad: actividad.actividadRef
         ? actividad.actividadRef.nombre
         : actividad.nombreActividad,
+      nombreActividadPropio: actividad.nombreActividad, // Mantiene el nombre original si ya existía
     }));
-
     console.log("Búsqueda exitosa");
     res.json(solicitud);
   } catch (error) {

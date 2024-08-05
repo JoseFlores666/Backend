@@ -38,7 +38,7 @@ export const crearInforme = async (req, res) => {
     const nuevoInforme = new InformeTecnico({
       informe: {
         Solicita,
-        fecha: new Date(fecha), // Asegúrate de convertir la fecha a un objeto Date
+        fecha: new Date(fecha),
         tipoDeMantenimiento,
         tipoDeTrabajo: tipoDeTrabajo,
         tipoDeSolicitud,
@@ -65,6 +65,7 @@ export const verInformePorId = async (req, res) => {
       .populate("informe.user")
       .populate("informe.estado")
       .populate("informe.solicitud.tecnicos")
+      .populate("informe.solicitud.material")
       .populate("informe.firmas");
     if (!informe)
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
@@ -146,6 +147,8 @@ export const llenadoDEPInforme = async (req, res) => {
     const informe = await InformeTecnico.findById(id);
     if (!informe)
       return res.status(404).json({ mensaje: "Informe no encontrado" });
+
+    informe.informe.solicitud.material = items;
 
     if (informe.informe.solicitud.material !== null) {
       const estadoAsignado = await OrdenTrabajoEstados.findOne({ id: 4 });

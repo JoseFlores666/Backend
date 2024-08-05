@@ -54,7 +54,7 @@ const informeTecnicSchema = new mongoose.Schema({
     },
     estado: {
       type: mongoose.Types.ObjectId,
-      ref: "OrdenTrabajoEstados", // Este nombre debe coincidir con el nombre del modelo
+      ref: "OrdenTrabajoEstados", 
     },
   },
 });
