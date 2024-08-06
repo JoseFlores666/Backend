@@ -11,7 +11,8 @@ import {
   editarEstadoDelInforme,
   verImagenesInformePorId,
   capturarDiagnostico,
-  filtrarInformes,
+   eliminarImagenes,
+  subirImagenes,actualizarInforme
 } from "../controllers/infor.controller.js";
 import fileUpload from "express-fileupload";
 
@@ -27,6 +28,7 @@ router.post(
   llenadoDEPInforme
 );
 router.post("/", crearInforme);
+router.post('/:id/imagenes', subirImagenes);
 
 router.put("/:id", auth, editarInforme);
 router.put("/AsignarTecnico/:id", AsignarTecnicoInforme);
@@ -39,8 +41,10 @@ router.put(
   }),
   capturarDiagnostico
 );
+router.put('/actualizarInformes/:id', editarInforme);
+
 router.get("/:id", verInformePorId);
 router.get("/traerImagenes/:id", verImagenesInformePorId);
 router.delete("/:id", auth, eliminarInforme);
-
+router.delete('/:id/imagenes', eliminarImagenes);
 export default router;

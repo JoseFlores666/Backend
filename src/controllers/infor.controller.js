@@ -396,76 +396,181 @@ export const capturarDiagnostico = async (req, res) => {
   }
 };
 
-export const filtrarInformes = async (req, res) => {
+export const actualizarInforme = async (req, res) => {
   try {
-    const { mes, anio, idEstado } = req.query;
-    let filtro = {};
+    const { id } = req.params;
+    const {
+      Solicita,
+      fecha,
+      tipoDeMantenimiento,
+      tipoDeTrabajo,
+      tipoDeSolicitud,
+      descripcion,
+      user,
+      estado,
+      solicitud,
+    } = req.body;
 
-    // Convertir parámetros a números si están definidos
-    const mesNum = mes ? parseInt(mes, 10) : null;
-    const anioNum = anio ? parseInt(anio, 10) : null;
-
-    // Filtro de fecha
-    if (mesNum !== null) {
-      let fechaInicio, fechaFin;
-
-      if (anioNum && !isNaN(anioNum)) {
-        // Si se proporciona el año, filtrar por ese año y mes
-        fechaInicio = new Date(anioNum, mesNum, 1);
-        fechaFin = new Date(anioNum, mesNum + 1, 0); // Último día del mes
-      } else {
-        // Si no se proporciona el año, filtrar por cualquier año con ese mes
-        filtro["$expr"] = {
-          $and: [
-            { $eq: [{ $month: "$informe.fecha" }, mesNum + 1] },
-          ],
-        };
-      }
-
-      if (anioNum && !isNaN(anioNum)) {
-        filtro["informe.fecha"] = { $gte: fechaInicio, $lte: fechaFin };
-      }
+    // Verifica si el informe existe
+    const informe = await InformeTecnico.findById(id);
+    if (!informe) {
+      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
     }
 
-    // Filtro de estado
-    if (idEstado) {
-      const estadoFiltrado = await OrdenTrabajoEstados.findOne({
-        id: idEstado,
+    // Actualiza los campos básicos del informe
+    informe.informe.Solicita = Solicita || informe.informe.Solicita;
+    informe.informe.fecha = fecha ? new Date(fecha) : informe.informe.fecha;
+    informe.informe.tipoDeMantenimiento =
+      tipoDeMantenimiento || informe.informe.tipoDeMantenimiento;
+    informe.informe.tipoDeTrabajo =
+      tipoDeTrabajo || informe.informe.tipoDeTrabajo;
+    informe.informe.tipoDeSolicitud =
+      tipoDeSolicitud || informe.informe.tipoDeSolicitud;
+    informe.informe.descripcion = descripcion || informe.informe.descripcion;
+    informe.informe.user = user || informe.informe.user;
+
+    // Actualiza el estado
+    if (estado) {
+      const estadoActualizado = await OrdenTrabajoEstados.findOne({
+        id: estado,
       });
-      if (estadoFiltrado) {
-        filtro["informe.estado"] = estadoFiltrado._id;
+      if (estadoActualizado) {
+        informe.informe.estado = estadoActualizado._id;
       } else {
-        return res.status(400).json({ message: "Estado no encontrado" });
+        return res.status(400).json({ mensaje: "Estado no encontrado" });
       }
     }
 
-    // Obtener informes filtrados
-    const informes = await InformeTecnico.find(filtro).populate(
-      "informe.estado"
-    );
+    // Actualiza la solicitud si se proporciona
+    if (solicitud) {
+      informe.informe.solicitud.fechaAtencion =
+        solicitud.fechaAtencion || informe.informe.solicitud.fechaAtencion;
+      informe.informe.solicitud.tecnicos =
+        solicitud.tecnicos || informe.informe.solicitud.tecnicos;
+      informe.informe.solicitud.diagnostico =
+        solicitud.diagnostico || informe.informe.solicitud.diagnostico;
 
-    // Contar informes por estado
-    const conteoEstados = {};
-    informes.forEach((informe) => {
-      const estadoId = informe.informe.estado._id.toString();
-      conteoEstados[estadoId] = (conteoEstados[estadoId] || 0) + 1;
-    });
+      // Maneja el material si se proporciona
+      if (solicitud.material) {
+        informe.informe.solicitud.material = solicitud.material;
+      }
+    }
 
-    // Obtener todos los estados
-    const todosLosEstados = await OrdenTrabajoEstados.find();
-
-    // Crear un objeto con todos los estados y su conteo (incluyendo los que no tienen informes)
-    const conteoPorEstado = todosLosEstados.map((estado) => ({
-      id: estado.id,
-      nombre: estado.nombre,
-      cantidadTotal: conteoEstados[estado._id.toString()] || 0,
-    }));
-
-    res.status(200).json( conteoPorEstado );
+    // Guarda los cambios en la base de datos
+    await informe.save();
+    res
+      .status(200)
+      .json({ mensaje: "Informe técnico actualizado correctamente", informe });
   } catch (error) {
-    console.error("Error al filtrar informes:", error);
+    console.error("Error al actualizar el informe técnico:", error);
     res
       .status(500)
       .json({ message: "Error interno del servidor", error: error.message });
+  }
+};
+
+export const eliminarImagenes = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { imagenesParaEliminar } = req.body;
+
+    // Verifica si se proporcionan imágenes para eliminar
+    if (!imagenesParaEliminar || !Array.isArray(imagenesParaEliminar)) {
+      return res
+        .status(400)
+        .json({ mensaje: "No se proporcionaron imágenes para eliminar" });
+    }
+
+    // Busca el informe técnico por ID
+    const informe = await InformeTecnico.findById(id);
+    if (!informe) {
+      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+    }
+
+    // Elimina las imágenes de Cloudinary
+    for (const imagen of imagenesParaEliminar) {
+      try {
+        await deleteImage(imagen.public_id);
+      } catch (error) {
+        console.error("Error al eliminar la imagen de Cloudinary:", error);
+        return res
+          .status(500)
+          .json({ mensaje: "Error al eliminar una de las imágenes" });
+      }
+    }
+
+    // Actualiza el informe técnico para remover las imágenes eliminadas
+    informe.informe.solicitud.imagenes =
+      informe.informe.solicitud.imagenes.filter(
+        (img) =>
+          !imagenesParaEliminar.some(
+            (elimImg) => elimImg.public_id === img.public_id
+          )
+      );
+
+    // Guarda los cambios en la base de datos
+    await informe.save();
+    res.status(200).json({ mensaje: "Imágenes eliminadas correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar imágenes del informe técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error interno del servidor", error: error.message });
+  }
+};
+export const subirImagenes = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verifica si se han proporcionado archivos en la solicitud
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res
+        .status(400)
+        .json({ mensaje: "No se proporcionaron imágenes para subir" });
+    }
+
+    // Busca el informe técnico por ID
+    const informe = await InformeTecnico.findById(id);
+    if (!informe) {
+      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+    }
+
+    const imagenes = [];
+    const fileKeys = Object.keys(req.files);
+
+    // Procesa y sube cada archivo
+    for (const key of fileKeys) {
+      const file = req.files[key];
+      try {
+        const result = await uploadImage(file.tempFilePath || file.path);
+        imagenes.push({
+          public_id: result.public_id,
+          secure_url: result.secure_url,
+        });
+        await fs.unlink(file.tempFilePath || file.path); // Elimina el archivo temporal después de subirlo
+      } catch (error) {
+        console.error("Error al procesar la imagen:", error);
+        return res
+          .status(500)
+          .json({ mensaje: "Error al procesar una de las imágenes" });
+      }
+    }
+
+    // Actualiza el informe técnico con las nuevas imágenes
+    informe.informe.solicitud.imagenes = [
+      ...informe.informe.solicitud.imagenes,
+      ...imagenes,
+    ];
+
+    // Guarda los cambios en la base de datos
+    await informe.save();
+    res
+      .status(200)
+      .json({ mensaje: "Imágenes subidas correctamente", imagenes });
+  } catch (error) {
+    console.error("Error al subir imágenes al informe técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error interno del servidor", error: error.message });
   }
 };
