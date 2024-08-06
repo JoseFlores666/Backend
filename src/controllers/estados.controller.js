@@ -10,27 +10,6 @@ export const verEstados = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-export const VercantidadTotal = async (req, res) => {
-  try {
-    const solicitudes = await Solicitud.find().populate("estado", "id").lean();
-
-    const estados = await Estados.find().lean();
-
-    // Mapea los estados para contar cuántas solicitudes tienen cada estado asignado
-    const conteoEstados = estados.map((estado) => ({
-      id: estado.id,
-      nombre: estado.nombre,
-      cantidadTotal: solicitudes.filter(
-        (solicitud) => solicitud.estado && solicitud.estado.id === estado.id
-      ).length,
-    }));
-
-    res.json(conteoEstados);
-  } catch (error) {
-    console.error("Error al obtener el conteo de solicitudes:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
-  }
-};
 
 export const crearEstados = async (req, res) => {
   try {
@@ -88,5 +67,72 @@ export const actualizarEstados = async (req, res) => {
     res.status(200).json({ mensaje: "Estados actualizados exitosamente" });
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
+  }
+};
+
+export const filtrarSolicitudesTotalEstados = async (req, res) => {
+  try {
+    const { mes, anio, idEstado } = req.query;
+    let filtro = {};
+
+    const mesNum = mes ? parseInt(mes, 10) : null;
+    const anioNum = anio ? parseInt(anio, 10) : null;
+
+    // Filtro de fecha
+    if (mesNum !== null) {
+      let fechaInicio, fechaFin;
+
+      if (anioNum && !isNaN(anioNum)) {
+        fechaInicio = new Date(anioNum, mesNum, 1);
+        fechaFin = new Date(anioNum, mesNum + 1, 0);
+      } else {
+        filtro["$expr"] = {
+          $and: [{ $eq: [{ $month: "$informe.fecha" }, mesNum + 1] }],
+        };
+      }
+
+      if (anioNum && !isNaN(anioNum)) {
+        filtro["fecha"] = { $gte: fechaInicio, $lte: fechaFin };
+      }
+    }
+
+    // Filtro de estado
+    if (idEstado) {
+      const estadoFiltrado = await Estados.findOne({
+        id: idEstado,
+      });
+      if (estadoFiltrado) {
+        filtro["estado"] = estadoFiltrado._id;
+      } else {
+        return res.status(400).json({ message: "Estado no encontrado" });
+      }
+    }
+
+    // Obtener informes filtrados
+    const solicitud = await Solicitud.find(filtro).populate("estado");
+
+    // Contar informes por estado
+    const conteoEstados = {};
+    solicitud.forEach((soli) => {
+      const estadoId = soli.estado._id.toString();
+      conteoEstados[estadoId] = (conteoEstados[estadoId] || 0) + 1;
+    });
+
+    // Obtener todos los estados
+    const todosLosEstados = await Estados.find();
+
+    // Crear un objeto con todos los estados y su conteo (incluyendo los que no tienen informes)
+    const conteoPorEstado = todosLosEstados.map((estado) => ({
+      id: estado.id,
+      nombre: estado.nombre,
+      cantidadTotal: conteoEstados[estado._id.toString()] || 0,
+    }));
+
+    res.status(200).json(conteoPorEstado);
+  } catch (error) {
+    console.error("Error al filtrar informes:", error);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };

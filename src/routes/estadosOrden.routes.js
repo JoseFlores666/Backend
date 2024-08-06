@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   verEstadosOrdenTrabajo,
-  vercantidadTotalOrdenTrabajoEstados,
+  filtrarInformesTotalEstados,
   crearEstadosOrdenTrabajo,
   actualizarEstadosOrdenTrabajo
 } from "../controllers/estadosOrden.controller.js";
@@ -9,7 +9,8 @@ import {
 const router = Router();
 
 router.get("/", verEstadosOrdenTrabajo);
-router.get("/cantidadTotal", vercantidadTotalOrdenTrabajoEstados);
+router.get("/cantidadTotal", filtrarInformesTotalEstados);
+
 router.post("/crear", crearEstadosOrdenTrabajo);
 router.put("/actualizar", actualizarEstadosOrdenTrabajo);
 

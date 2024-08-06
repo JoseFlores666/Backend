@@ -17,30 +17,75 @@ export const verEstadosOrdenTrabajo = async (req, res) => {
   }
 };
 
-export const vercantidadTotalOrdenTrabajoEstados = async (req, res) => {
+export const filtrarInformesTotalEstados = async (req, res) => {
   try {
-    const ordenesDeTrabajo = await InformeTecnico.find()
-      .populate("informe.estado", "id")
-      .lean();
-    // Obtén todos los estados
-    const estados = await OrdenTrabajoEstados.find().lean();
+    const { mes, anio, idEstado } = req.query;
+    let filtro = {};
 
-    // Mapea los estados para contar cuántas solicitudes tienen cada estado asignado
-    const conteoEstados = estados.map((estado) => ({
+    // Convertir parámetros a números si están definidos
+    const mesNum = mes ? parseInt(mes, 10) : null;
+    const anioNum = anio ? parseInt(anio, 10) : null;
+
+    // Filtro de fecha
+    if (mesNum !== null) {
+      let fechaInicio, fechaFin;
+
+      if (anioNum && !isNaN(anioNum)) {
+        // Si se proporciona el año, filtrar por ese año y mes
+        fechaInicio = new Date(anioNum, mesNum, 1);
+        fechaFin = new Date(anioNum, mesNum + 1, 0); // Último día del mes
+      } else {
+        // Si no se proporciona el año, filtrar por cualquier año con ese mes
+        filtro["$expr"] = {
+          $and: [{ $eq: [{ $month: "$informe.fecha" }, mesNum + 1] }],
+        };
+      }
+
+      if (anioNum && !isNaN(anioNum)) {
+        filtro["informe.fecha"] = { $gte: fechaInicio, $lte: fechaFin };
+      }
+    }
+
+    // Filtro de estado
+    if (idEstado) {
+      const estadoFiltrado = await OrdenTrabajoEstados.findOne({
+        id: idEstado,
+      });
+      if (estadoFiltrado) {
+        filtro["informe.estado"] = estadoFiltrado._id;
+      } else {
+        return res.status(400).json({ message: "Estado no encontrado" });
+      }
+    }
+
+    // Obtener informes filtrados
+    const informes = await InformeTecnico.find(filtro).populate(
+      "informe.estado"
+    );
+
+    // Contar informes por estado
+    const conteoEstados = {};
+    informes.forEach((informe) => {
+      const estadoId = informe.informe.estado._id.toString();
+      conteoEstados[estadoId] = (conteoEstados[estadoId] || 0) + 1;
+    });
+
+    // Obtener todos los estados
+    const todosLosEstados = await OrdenTrabajoEstados.find();
+
+    // Crear un objeto con todos los estados y su conteo (incluyendo los que no tienen informes)
+    const conteoPorEstado = todosLosEstados.map((estado) => ({
       id: estado.id,
       nombre: estado.nombre,
-      cantidadTotal: ordenesDeTrabajo.filter(
-        (orden) => orden.informe.estado && orden.informe.estado.id === estado.id
-      ).length,
+      cantidadTotal: conteoEstados[estado._id.toString()] || 0,
     }));
 
-    res.json(conteoEstados);
+    res.status(200).json(conteoPorEstado);
   } catch (error) {
-    console.error("Error al obtener el conteo de solicitudes:", error);
-    res.status(500).json({
-      message: "Error interno del servidor al obtener el conteo de solicitudes",
-      error: error.message,
-    });
+    console.error("Error al filtrar informes:", error);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 
@@ -65,7 +110,7 @@ export const crearEstadosOrdenTrabajo = async (req, res) => {
     res.status(201).json({
       id: nuevoEstado.id,
       nombre: nuevoEstado.nombre,
-      message: "Estado creado exitosamente",
+      mensaje: "Estado creado exitosamente",
     });
   } catch (error) {
     console.error("Error al crear el estado:", error);
@@ -98,7 +143,7 @@ export const actualizarEstadosOrdenTrabajo = async (req, res) => {
       )
     );
 
-    res.status(200).json({ message: "Estados actualizados exitosamente" });
+    res.status(200).json({ mensaje: "Estados actualizados exitosamente" });
   } catch (error) {
     console.error(
       "Error al actualizar los estados de orden de trabajo:",

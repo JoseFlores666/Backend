@@ -29,7 +29,6 @@ router.post(
 router.post("/", crearInforme);
 
 router.put("/:id", auth, editarInforme);
-router.get("/filtrarInformes", filtrarInformes);
 router.put("/AsignarTecnico/:id", AsignarTecnicoInforme);
 router.put("/editarEstadoInforme/:id", editarEstadoDelInforme);
 router.put(
