@@ -12,6 +12,15 @@ export const verTodosInformes = async (req, res) => {
       .populate("informe.estado")
       .populate("informe.solicitud.tecnicos")
       .populate("informe.firmas");
+
+    const estadoActualizado = OrdenTrabajoEstados.findById(1)
+
+    informes.forEach((informe) => {
+      if (informe.estado && !informe.solicitud.tecnicos) {
+        informe.estado = estadoActualizado;
+      }
+    });
+
     res.status(200).json(informes);
   } catch (error) {
     console.error("Error al obtener informes técnicos:", error);
