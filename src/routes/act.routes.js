@@ -4,7 +4,8 @@ import {
   crearActividad,
   obtenerActividades,
   eliminarActividad,
-  obtenerActividadesPorId,actualizarActividad
+  obtenerActividadesPorId,
+  actualizarActividad,
 } from "../controllers/act.controller.js";
 
 const router = Router();

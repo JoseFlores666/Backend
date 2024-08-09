@@ -29,7 +29,7 @@ export const obtenerActividades = async (req, res) => {
 };
 export const obtenerActividadesPorId = async (req, res) => {
   try {
-    const actividades = await Actividad.findById(idActSelect);
+    const actividades = await Actividad.findById(req.params.id);
     res.json(actividades);
   } catch (error) {
     console.error("Error al obtener actividades:", error);

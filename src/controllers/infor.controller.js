@@ -115,31 +115,52 @@ export const eliminarInforme = async (req, res) => {
 
 export const editarInforme = async (req, res) => {
   try {
-    const { _id } = req.params;
-    const informeModificado = await InformeTecnico.findByIdAndUpdate(
-      _id,
-      req.body,
-      { new: true }
-    )
-      .populate("informe.user")
+    const { id } = req.params;
+    const { Solicita, fecha, tipoDeMantenimiento, tipoDeTrabajo, tipoDeSolicitud, descripcion, solicitud } = req.body;
+
+    console.log(req.body)
+
+    // Buscar el informe técnico por su ID
+    const informe = await InformeTecnico.findById(id)
       .populate("informe.estado")
       .populate("informe.solicitud.tecnicos")
       .populate("informe.firmas");
 
-    if (!informeModificado)
+    // Si el informe no existe, devolver un error 404
+    if (!informe) {
       return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+    }
 
-    res.status(200).json({
-      mensaje: "Informe técnico modificado correctamente",
-      informe: informeModificado,
-    });
+    // Actualizar los campos proporcionados
+    informe.informe.Solicita = Solicita || informe.informe.Solicita;
+    informe.informe.fecha = fecha ? new Date(fecha) : informe.informe.fecha;
+    informe.informe.tipoDeMantenimiento = tipoDeMantenimiento || informe.informe.tipoDeMantenimiento;
+    informe.informe.tipoDeTrabajo = tipoDeTrabajo || informe.informe.tipoDeTrabajo;
+    informe.informe.tipoDeSolicitud = tipoDeSolicitud || informe.informe.tipoDeSolicitud;
+    informe.informe.descripcion = descripcion || informe.informe.descripcion;
+
+
+
+    // Si se proporciona una solicitud, actualizar los campos relevantes
+    if (solicitud) {
+      informe.informe.solicitud.fechaAtencion = solicitud.fechaAtencion || informe.informe.solicitud.fechaAtencion;
+      informe.informe.solicitud.tecnicos = solicitud.tecnicos || informe.informe.solicitud.tecnicos;
+      informe.informe.solicitud.diagnostico = solicitud.diagnostico || informe.informe.solicitud.diagnostico;
+
+      // Si se proporciona material, actualizarlo
+      if (solicitud.material) {
+        informe.informe.solicitud.material = solicitud.material;
+      }
+    }
+
+    await informe.save();
+    res.status(200).json({ mensaje: "Informe técnico actualizado correctamente", informe });
   } catch (error) {
-    console.error("Error al modificar informe técnico:", error);
-    res
-      .status(500)
-      .json({ message: "Error interno del servidor", error: error.message });
+    console.error("Error al actualizar el informe técnico:", error);
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
   }
 };
+
 
 export const llenadoDEPInforme = async (req, res) => {
   try {
