@@ -78,8 +78,8 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
     const mesNum = mes ? parseInt(mes, 10) : null;
     const anioNum = anio ? parseInt(anio, 10) : null;
 
-    // Filtro de fecha
-    if (mesNum !== null) {
+     // Filtro de fecha
+     if (mesNum !== null) {
       let fechaInicio, fechaFin;
 
       if (anioNum && !isNaN(anioNum)) {
@@ -96,7 +96,7 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
       if (anioNum && !isNaN(anioNum)) {
         filtro["fecha"] = { $gte: fechaInicio, $lte: fechaFin };
       }
-    } else if (anioNum !== null) {
+    }else if (anioNum !== null) {
       // Si solo se proporciona el año, filtrar por todo el año
       const fechaInicio = new Date(Date.UTC(anioNum, 0, 1)); // 1 de enero, UTC
       const fechaFin = new Date(Date.UTC(anioNum + 1, 0, 0, 23, 59, 59, 999)); // 31 de diciembre, UTC
@@ -106,9 +106,7 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
 
     // Filtro de estado
     if (idEstado) {
-      const estadoFiltrado = await Estados.findOne({
-        id: idEstado,
-      });
+      const estadoFiltrado = await Estados.findOne({ id: idEstado });
       if (estadoFiltrado) {
         filtro["estado"] = estadoFiltrado._id;
       } else {
@@ -116,12 +114,12 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
       }
     }
 
-    // Obtener informes filtrados
-    const solicitud = await Solicitud.find(filtro).populate("estado");
+    // Obtener solicitudes filtradas
+    const solicitudes = await Solicitud.find(filtro).populate("estado");
 
-    // Contar informes por estado
+    // Contar solicitudes por estado
     const conteoEstados = {};
-    solicitud.forEach((soli) => {
+    solicitudes.forEach((soli) => {
       const estadoId = soli.estado._id.toString();
       conteoEstados[estadoId] = (conteoEstados[estadoId] || 0) + 1;
     });
@@ -129,7 +127,7 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
     // Obtener todos los estados
     const todosLosEstados = await Estados.find();
 
-    // Crear un objeto con todos los estados y su conteo (incluyendo los que no tienen informes)
+    // Crear un objeto con todos los estados y su conteo (incluyendo los que no tienen solicitudes)
     const conteoPorEstado = todosLosEstados.map((estado) => ({
       id: estado.id,
       nombre: estado.nombre,
@@ -138,7 +136,7 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
 
     res.status(200).json(conteoPorEstado);
   } catch (error) {
-    console.error("Error al filtrar informes:", error);
+    console.error("Error al filtrar solicitudes:", error);
     res
       .status(500)
       .json({ message: "Error interno del servidor", error: error.message });
