@@ -18,7 +18,7 @@ import fileUpload from "express-fileupload";
 
 const router = Router();
 
-router.get("/", auth, verTodosInformes);
+router.get("/", verTodosInformes);
 router.post(
   "/llenadoDEPInforme/:id",
   fileUpload({

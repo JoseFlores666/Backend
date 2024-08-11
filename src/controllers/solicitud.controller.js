@@ -20,8 +20,6 @@ export const getTodasSolicitudes = async (req, res) => {
       .lean(); // Permite modificar los datos directamente sin afectar la base de datos
 
     solicitudes.forEach((solicitud) => {
-      solicitud.fecha = solicitud.fecha.toLocaleDateString("es-MX");
-      // Reemplazar nombreActividad con nombre de actividad referenciada si está disponible
       solicitud.actividades = solicitud.actividades.map((actividad) => ({
         ...actividad,
         nombreActividad: actividad.actividadRef
