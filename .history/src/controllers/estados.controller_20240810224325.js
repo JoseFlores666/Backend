@@ -89,19 +89,19 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
       } else {
         // Si no se proporciona el año, filtrar por cualquier año con ese mes
         filtro["$expr"] = {
-          $and: [{ $eq: [{ $month: "$fecha" }, mesNum + 1] }],
+          $and: [{ $eq: [{ $month: "$informe.fecha" }, mesNum + 1] }],
         };
       }
 
       if (anioNum && !isNaN(anioNum)) {
-        filtro["fecha"] = { $gte: fechaInicio, $lte: fechaFin };
+        filtro["informe.fecha"] = { $gte: fechaInicio, $lte: fechaFin };
       }
     } else if (anioNum !== null) {
       // Si solo se proporciona el año, filtrar por todo el año
       const fechaInicio = new Date(Date.UTC(anioNum, 0, 1)); // 1 de enero, UTC
       const fechaFin = new Date(Date.UTC(anioNum + 1, 0, 0, 23, 59, 59, 999)); // 31 de diciembre, UTC
 
-      filtro["fecha"] = { $gte: fechaInicio, $lte: fechaFin };
+      filtro["informe.fecha"] = { $gte: fechaInicio, $lte: fechaFin };
     }
 
     // Filtro de estado
