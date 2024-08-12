@@ -13,7 +13,7 @@ export const verTodosInformes = async (req, res) => {
       .populate("informe.solicitud.tecnicos")
       .populate("informe.firmas");
 
-    const estadoActualizado = OrdenTrabajoEstados.findById(1)
+    const estadoActualizado = OrdenTrabajoEstados.findById(1);
 
     informes.forEach((informe) => {
       if (informe.estado && !informe.solicitud.tecnicos) {
@@ -112,13 +112,73 @@ export const eliminarInforme = async (req, res) => {
       .json({ message: "Error interno del servidor", error: error.message });
   }
 };
+export const eliminarImagenInforme = async (req, res) => {
+  try {
+    const informe = await InformeTecnico.findById(req.params.id);
+
+    if (!informe) {
+      return res.status(404).json({ message: "Informe técnico no encontrado" });
+    }
+
+    const { public_id } = req.body;
+    console.log(req.body);
+
+    // Buscar la imagen en el array de imágenes
+    const imagen = informe.informe.solicitud.imagenes.find(
+      (img) => img.public_id === public_id
+    );
+
+    if (!imagen) {
+      return res.status(404).json({ message: "Imagen no encontrada" });
+    }
+
+    // Eliminar la imagen de Cloudinary
+    try {
+      await deleteImage(public_id);
+    } catch (err) {
+      console.error("Error al eliminar la imagen de Cloudinary:", err);
+      return res.status(500).json({
+        message: "Error al eliminar la imagen de Cloudinary",
+        error: err.message,
+      });
+    }
+
+    // Filtrar el array para eliminar la imagen seleccionada
+    informe.informe.solicitud.imagenes =
+      informe.informe.solicitud.imagenes.filter(
+        (img) => img.public_id !== public_id
+      );
+
+    await informe.save();
+
+    res.status(200).json({
+      mensaje: "La imagen seleccionada ha sido eliminada con éxito",
+    });
+  } catch (error) {
+    console.error(
+      "Error al eliminar la imagen seleccionada del informe técnico:",
+      error
+    );
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
+  }
+};
 
 export const editarInforme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Solicita, fecha, tipoDeMantenimiento, tipoDeTrabajo, tipoDeSolicitud, descripcion, solicitud } = req.body;
+    const {
+      Solicita,
+      fecha,
+      tipoDeMantenimiento,
+      tipoDeTrabajo,
+      tipoDeSolicitud,
+      descripcion,
+      solicitud,
+    } = req.body;
 
-    console.log(req.body)
+    console.log(req.body);
 
     // Buscar el informe técnico por su ID
     const informe = await InformeTecnico.findById(id)
@@ -134,18 +194,22 @@ export const editarInforme = async (req, res) => {
     // Actualizar los campos proporcionados
     informe.informe.Solicita = Solicita || informe.informe.Solicita;
     informe.informe.fecha = fecha ? new Date(fecha) : informe.informe.fecha;
-    informe.informe.tipoDeMantenimiento = tipoDeMantenimiento || informe.informe.tipoDeMantenimiento;
-    informe.informe.tipoDeTrabajo = tipoDeTrabajo || informe.informe.tipoDeTrabajo;
-    informe.informe.tipoDeSolicitud = tipoDeSolicitud || informe.informe.tipoDeSolicitud;
+    informe.informe.tipoDeMantenimiento =
+      tipoDeMantenimiento || informe.informe.tipoDeMantenimiento;
+    informe.informe.tipoDeTrabajo =
+      tipoDeTrabajo || informe.informe.tipoDeTrabajo;
+    informe.informe.tipoDeSolicitud =
+      tipoDeSolicitud || informe.informe.tipoDeSolicitud;
     informe.informe.descripcion = descripcion || informe.informe.descripcion;
-
-
 
     // Si se proporciona una solicitud, actualizar los campos relevantes
     if (solicitud) {
-      informe.informe.solicitud.fechaAtencion = solicitud.fechaAtencion || informe.informe.solicitud.fechaAtencion;
-      informe.informe.solicitud.tecnicos = solicitud.tecnicos || informe.informe.solicitud.tecnicos;
-      informe.informe.solicitud.diagnostico = solicitud.diagnostico || informe.informe.solicitud.diagnostico;
+      informe.informe.solicitud.fechaAtencion =
+        solicitud.fechaAtencion || informe.informe.solicitud.fechaAtencion;
+      informe.informe.solicitud.tecnicos =
+        solicitud.tecnicos || informe.informe.solicitud.tecnicos;
+      informe.informe.solicitud.diagnostico =
+        solicitud.diagnostico || informe.informe.solicitud.diagnostico;
 
       // Si se proporciona material, actualizarlo
       if (solicitud.material) {
@@ -154,13 +218,16 @@ export const editarInforme = async (req, res) => {
     }
 
     await informe.save();
-    res.status(200).json({ mensaje: "Informe técnico actualizado correctamente", informe });
+    res
+      .status(200)
+      .json({ mensaje: "Informe técnico actualizado correctamente", informe });
   } catch (error) {
     console.error("Error al actualizar el informe técnico:", error);
-    res.status(500).json({ message: "Error interno del servidor", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
-
 
 export const llenadoDEPInforme = async (req, res) => {
   try {
@@ -195,12 +262,14 @@ export const llenadoDEPInforme = async (req, res) => {
 
       for (const key of fileKeys) {
         const file = req.files[key];
-
+        const nombreArchivo = file.name;
+        console.log(nombreArchivo);
         try {
           const result = await uploadImage(file.tempFilePath || file.path);
           imagenes.push({
             public_id: result.public_id,
             secure_url: result.secure_url,
+            nombre: nombreArchivo,
           });
           await fs.unlink(file.tempFilePath || file.path);
         } catch (error) {
@@ -275,7 +344,7 @@ export const editarEstadoDelInforme = async (req, res) => {
 
       for (const key of fileKeys) {
         const file = req.files[key];
-
+        const nombreArchivo = file.name;
         try {
           // Subir la imagen y obtener los datos de la imagen subida
           const result = await uploadImage(file.tempFilePath || file.path);
@@ -283,6 +352,7 @@ export const editarEstadoDelInforme = async (req, res) => {
           imagenes.push({
             public_id: result.public_id,
             secure_url: result.secure_url,
+            nombre: nombreArchivo,
           });
 
           // Elimina el archivo temporal después de subirlo
@@ -368,7 +438,7 @@ export const capturarDiagnostico = async (req, res) => {
 
       for (const key of fileKeys) {
         const file = req.files[key];
-
+        const nombreArchivo = file.name;
         try {
           // Subir la imagen y obtener los datos de la imagen subida
           const result = await uploadImage(file.tempFilePath || file.path);
@@ -376,6 +446,7 @@ export const capturarDiagnostico = async (req, res) => {
           imagenes.push({
             public_id: result.public_id,
             secure_url: result.secure_url,
+            nombre: nombreArchivo,
           });
 
           // Elimina el archivo temporal después de subirlo
@@ -504,6 +575,7 @@ export const eliminarImagenes = async (req, res) => {
     const { id } = req.params;
     const { imagenesParaEliminar } = req.body;
 
+  
     // Verifica si se proporcionan imágenes para eliminar
     if (!imagenesParaEliminar || !Array.isArray(imagenesParaEliminar)) {
       return res
