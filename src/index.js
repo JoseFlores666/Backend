@@ -45,7 +45,6 @@ async function main() {
     await connectDB();
     await initFolioCounter(); // Inicializa el contador de folios
     app.listen(PORT );
-    console.log(`Listening on port http://localhost:${PORT}`);
   } catch (error) {
     console.error(error);
   }
