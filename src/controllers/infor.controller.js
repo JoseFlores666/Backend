@@ -464,24 +464,18 @@ export const capturarDiagnostico = async (req, res) => {
         ...imagenes,
       ];
     }
-    const estadoAsignado = await OrdenTrabajoEstados.findOne({ id: 2 });
+ 
     const estadoDiagnosticado = await OrdenTrabajoEstados.findOne({ id: 3 });
     const estadoDeclinado = await OrdenTrabajoEstados.findOne({ id: 5 });
 
     informeEditado.informe.solicitud.diagnostico = diagnostico;
 
     if (accion === "declinar") {
-      if (informeEditado.informe.estado.equals(estadoAsignado._id)) {
-        informeEditado.informe.estado = estadoDeclinado._id;
-        await informeEditado.save();
-        return res
-          .status(200)
-          .json({ mensaje: "El informe ha sido declinado exitosamente" });
-      } else {
-        return res.status(400).json({
-          mensaje: "Error, el informe ya ha sido asignado a un técnico",
-        });
-      }
+      informeEditado.informe.estado = estadoDeclinado._id;
+      await informeEditado.save();
+      return res
+        .status(200)
+        .json({ mensaje: "El informe ha sido declinado exitosamente" });
     } else {
       informeEditado.informe.estado = estadoDiagnosticado._id;
       await informeEditado.save();

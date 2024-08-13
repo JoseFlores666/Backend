@@ -1,4 +1,5 @@
 import Solicitud from "../models/solicitud.modal.js";
+// import Actividad from "../models/actividad.modal.js";
 import Estados from "../models/estados.modal.js";
 import HistorialSoli from "../models/historialSoli.model.js";
 
@@ -290,30 +291,22 @@ export const verUnaSolicitudPorId = async (req, res) => {
   try {
     const id = req.params.id;
 
+    // Obtén la solicitud con la población inicial
     const solicitud = await Solicitud.findById(id)
       .populate({
         path: "proyecto",
         select: "nombre",
-      }) 
-      .populate({
-        path: "actividades",
-        select: "nombreActividad actividadRef",
       })
-      .lean(); // Usar .lean() para manipular el objeto directamente
+      .populate({
+        path: "actividades.actividadRef",
+        select: "_id nombreActividad",
+      })
+      .lean();
 
     if (!solicitud) {
       return res.status(404).json({ mensaje: "Solicitud no encontrada" });
     }
 
-    // Modificar el campo de actividades para incluir nombre de la actividad referenciada
-    solicitud.actividades = solicitud.actividades.map((actividad) => ({
-      ...actividad,
-      nombreActividad: actividad.actividadRef
-        ? actividad.actividadRef.nombre
-        : actividad.nombreActividad,
-      nombreActividadPropio: actividad.nombreActividad, // Mantiene el nombre original si ya existía
-    }));
-    console.log("Búsqueda exitosa");
     res.json(solicitud);
   } catch (error) {
     console.error("Error al obtener solicitud por ID:", error);
