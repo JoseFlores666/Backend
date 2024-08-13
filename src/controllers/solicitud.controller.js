@@ -297,7 +297,7 @@ export const verUnaSolicitudPorId = async (req, res) => {
       }) 
       .populate({
         path: "actividades",
-        select: "nombreActividad",
+        select: "nombreActividad actividadRef",
       })
       .lean(); // Usar .lean() para manipular el objeto directamente
 

@@ -12,6 +12,7 @@ export const verTodosInformes = async (req, res) => {
         "informe.Solicita.edificio": 1,
         "informe.solicitud.diagnostico": 1,
         "informe.solicitud.material.descripcion": 1,
+        "informe.solicitud.material.unidad": 1,
         "informe.solicitud.tecnicos": 1,
         _id: 0,
       }
@@ -19,16 +20,24 @@ export const verTodosInformes = async (req, res) => {
 
     // Mapear los resultados para obtener solo los campos necesarios en un solo objeto
     const formattedInformes = informes.map((informe) => {
-      // Concatenar los valores de solicitud.insumosSolicitados.descripcion
-      const materiales = informe?.informe?.solicitud?.material
+      // Concatenar los valores de solicitud.insumosSolicitados.descripcion y sus unidades
+
+      const materialesDescripcion = informe?.informe?.solicitud?.material
         ?.map((item) => item.descripcion)
         .filter(Boolean) // Filtrar valores falsy (undefined, null, etc.)
         .join(", "); // Unir los valores con una coma y un espacio
 
+      //hacemos lo mismo
+      const unidades = informe?.informe?.solicitud?.material
+        ?.map((item) => item.unidad)
+        .filter(Boolean)
+        .join(", ");
+
       return {
         descripcionDelServicio: informe?.informe?.descripcion || "",
         Observacionestecnicas: informe?.informe?.solicitud?.Diagnostico || "",
-        materialesDescripcion: materiales || "", // Descripción de materiales
+        materialesDescripcion: materialesDescripcion || "", // Descripción de materiales
+        unidadDelMaterial: unidades || "",
         nombre: informe?.informe?.Solicita?.nombre || "",
         areaSolicitante: informe?.informe?.Solicita?.areaSolicitante || "",
         edificio: informe?.informe?.Solicita?.edificio || "",
@@ -47,6 +56,7 @@ export const verTodasSoli = async (req, res) => {
     const solicitudes = await Solicitud.find(
       {},
       {
+      
         areaSolicitante: 1,
         suministros: 1,
         justificacionAdquisicion: 1,

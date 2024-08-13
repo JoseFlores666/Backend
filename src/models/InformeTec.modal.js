@@ -41,6 +41,7 @@ const informeTecnicSchema = new mongoose.Schema({
             required: false,
           },
           cantidad: Number,
+          unidad: String,
           descripcion: String,
         },
       ],

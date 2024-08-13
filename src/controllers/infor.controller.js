@@ -237,10 +237,10 @@ export const llenadoDEPInforme = async (req, res) => {
     for (let i = 0; req.body[`items[${i}].cantidad`]; i++) {
       items.push({
         cantidad: req.body[`items[${i}].cantidad`],
+        unidad: req.body[`items[${i}].unidad`],
         descripcion: req.body[`items[${i}].descripcion`],
       });
     }
-
     const informe = await InformeTecnico.findById(id);
     if (!informe)
       return res.status(404).json({ mensaje: "Informe no encontrado" });
@@ -575,7 +575,6 @@ export const eliminarImagenes = async (req, res) => {
     const { id } = req.params;
     const { imagenesParaEliminar } = req.body;
 
-  
     // Verifica si se proporcionan imágenes para eliminar
     if (!imagenesParaEliminar || !Array.isArray(imagenesParaEliminar)) {
       return res
