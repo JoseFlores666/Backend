@@ -1,7 +1,7 @@
-import app from "./src/app.js";
-import { PORT } from "./src/config.js";
-import { connectDB } from "./src/db.js";
-import FolioCounter from "./src/models/folioCounter.modal.js";
+import app from "./app.js";
+import { PORT } from "./config.js";
+import { connectDB } from "./db.js";
+import FolioCounter from "./models/folioCounter.modal.js";
 
 async function initFolioCounter() {
   try {
@@ -45,7 +45,6 @@ async function main() {
     await connectDB();
     await initFolioCounter(); // Inicializa el contador de folios
     app.listen(PORT );
-    console.log(`Listening on port http://localhost:${PORT}`);
   } catch (error) {
     console.error(error);
   }

@@ -23,7 +23,7 @@ const app = express();
 
 app.use(
   cors({
-    credentials: true, //Para que se pueda restablecer las cookies
+    credentials: true, // Para que se pueda restablecer las cookies
     origin: FRONTEND_URL,
   })
 );
@@ -33,6 +33,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+// Definir rutas de API
 app.use("/api/solicitud", solirouter);
 app.use("/api/abono", abonorouter);
 app.use("/api/api_key", api_keyrouter);
@@ -48,15 +49,5 @@ app.use("/api/tecnicos", tecnicoroutes);
 app.use("/api/estados", estadosRouter);
 app.use("/api/estadosOrdenTrabajo", estadosOrdenTrabajoRouter);
 app.use("/api/hisorialSolicitud", historialSoliRoutes);
-
-if (process.env.NODE_ENV === "production") {
-  const path = await import("path");
-  app.use(express.static("client/dist"));
-
-  app.get("*", (req, res) => {
-    console.log(path.resolve("client", "dist", "index.html"));
-    res.sendFile(path.resolve("client", "dist", "index.html"));
-  });
-}
 
 export default app;

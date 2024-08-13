@@ -127,7 +127,6 @@ export const filtrarSolicitudesTotalEstados = async (req, res) => {
     // Obtener todos los estados
     const todosLosEstados = await Estados.find();
 
-    // Crear un objeto con todos los estados y su conteo (incluyendo los que no tienen solicitudes)
     const conteoPorEstado = todosLosEstados.map((estado) => ({
       id: estado.id,
       nombre: estado.nombre,
