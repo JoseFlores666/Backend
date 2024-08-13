@@ -52,6 +52,8 @@ export const crearUnaSolicitud = async (req, res) => {
 
     const estado = await Estados.findOne({ id: 1 });
 
+console.log(selectedActividad)
+
     const nuevaSolicitud = new Solicitud({
       tipoSuministro: suministro,
       procesoClave: pc,
@@ -298,8 +300,8 @@ export const verUnaSolicitudPorId = async (req, res) => {
         select: "nombre",
       })
       .populate({
-        path: "actividades",
-        select: "_id nombreActividad actividadRef",
+        path: 'actividades',  // Populate the 'actividadRef' field within 'actividades'
+        select: 'nombre actividadRef',  // Select specific fields from the 'Actividad' model
       })
       .lean();
 

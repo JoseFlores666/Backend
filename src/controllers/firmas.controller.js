@@ -47,16 +47,16 @@ export const obtenerFirmaPorId = async (req, res) => {
 export const editarFirma = async (req, res) => {
   try {
     const { id } = req.params;
-    const { solicitante, jefeInmediato, direccion, rectoria } = req.body;
+    const { solicitud, jefeInmediato, direccion, autorizo } = req.body;
 
-   
+ 
     const firmaEditada = await Firma.findByIdAndUpdate(
       id,
       {
-        solicitud: solicitante,
+        solicitud: solicitud,
         revision: jefeInmediato,
         validacion: direccion,
-        autorizacion: rectoria,
+        autorizacion: autorizo,
       },
       { new: true }
     );
@@ -64,13 +64,13 @@ export const editarFirma = async (req, res) => {
     if (!firmaEditada) {
       return res.status(404).json({ mensaje: "Firma no encontrada" });
     }
-    res.json({ mensaje: "Firma editada exitosamente", firma: firmaEditada });
+ 
+    res.json({ mensaje: "Firma editada exitosamente" });
   } catch (error) {
     console.error("Error al editar firma:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
-
 
 // Eliminar una firma
 export const eliminarFirma = async (req, res) => {

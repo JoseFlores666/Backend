@@ -7,7 +7,7 @@ import {crearUnaSolicitud, editarUnaSolicitud, eliminarUnaSolicitud, getTodasSol
 
 const router = Router();
 
-router.get("/", auth,getTodasSolicitudes);
+router.get("/",getTodasSolicitudes);
 router.get("/:id",verUnaSolicitudPorId);
 router.post("/",  validateSchema(solicitudSchema),crearUnaSolicitud);
 router.delete("/eliminar/:id", auth, eliminarUnaSolicitud);
