@@ -298,8 +298,8 @@ export const verUnaSolicitudPorId = async (req, res) => {
         select: "nombre",
       })
       .populate({
-        path: "actividades.actividadRef",
-        select: "_id nombreActividad",
+        path: "actividades",
+        select: "_id nombreActividad actividadRef",
       })
       .lean();
 
