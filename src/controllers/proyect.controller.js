@@ -68,6 +68,7 @@ export const obtenerProyectos = async (req, res) => {
       path: "actividades",
       select: "nombre descripcion",
     });
+    
     if (!proyectos) {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
