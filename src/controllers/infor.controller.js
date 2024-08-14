@@ -33,8 +33,10 @@ export const verTodosInformes = async (req, res) => {
 export const crearInforme = async (req, res) => {
   try {
     const {
-      Solicita,
       fecha,
+      areasoli,
+      solicita,
+      edificio,
       tipoDeMantenimiento,
       tipoDeTrabajo,
       tipoDeSolicitud,
@@ -46,10 +48,14 @@ export const crearInforme = async (req, res) => {
 
     const nuevoInforme = new InformeTecnico({
       informe: {
-        Solicita,
+        Solicita: {
+          nombre: solicita,
+          areaSolicitante: areasoli,
+          edificio: edificio,
+        },
         fecha: new Date(fecha),
         tipoDeMantenimiento,
-        tipoDeTrabajo: tipoDeTrabajo,
+        tipoDeTrabajo,
         tipoDeSolicitud,
         descripcion,
         firmas: "664d5e645db2ce15d4468548",
@@ -464,7 +470,7 @@ export const capturarDiagnostico = async (req, res) => {
         ...imagenes,
       ];
     }
- 
+
     const estadoDiagnosticado = await OrdenTrabajoEstados.findOne({ id: 3 });
     const estadoDeclinado = await OrdenTrabajoEstados.findOne({ id: 5 });
 
