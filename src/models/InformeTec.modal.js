@@ -27,11 +27,12 @@ const informeTecnicSchema = new mongoose.Schema({
         ref: "Tecnicos",
       },
       diagnostico: String,
+    personalDEPMSG: String,
       imagenes: [
         {
           public_id: String,
           secure_url: String,
-          nombre:String,
+          nombre: String,
         },
       ],
       material: [
@@ -56,7 +57,7 @@ const informeTecnicSchema = new mongoose.Schema({
     },
     estado: {
       type: mongoose.Types.ObjectId,
-      ref: "OrdenTrabajoEstados", 
+      ref: "OrdenTrabajoEstados",
     },
   },
 });

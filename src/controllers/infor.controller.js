@@ -675,3 +675,26 @@ export const subirImagenes = async (req, res) => {
       .json({ mensaje: "Error interno del servidor", error: error.message });
   }
 };
+
+export const AsignarlePersonalDEPMSG = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { personalDEP } = req.body;
+    console.log(req.body);
+    const informeEditado = await InformeTecnico.findById(id);
+    if (!informeEditado) {
+      return res.status(404).json({ mensaje: "Informe técnico no encontrado" });
+    }
+    informeEditado.informe.solicitud.PersonalDEPMSG = personalDEP;
+
+    await informeEditado.save();
+    res.status(201).json({
+      mensaje: "Informe técnico se le agrego el personal correctamente",
+    });
+  } catch (error) {
+    console.error("Error al actualizar informe técnico:", error);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
+  }
+};

@@ -15,6 +15,7 @@ import {
   subirImagenes,
   actualizarInforme,
   eliminarImagenInforme,
+  AsignarlePersonalDEPMSG,
 } from "../controllers/infor.controller.js";
 import fileUpload from "express-fileupload";
 
@@ -35,6 +36,7 @@ router.post("/:id/imagenes", subirImagenes);
 router.put("/:id", auth, editarInforme);
 router.put("/AsignarTecnico/:id", AsignarTecnicoInforme);
 router.put("/editarEstadoInforme/:id", editarEstadoDelInforme);
+router.put("/AsignarlePersonalDEPMSG/:id", AsignarlePersonalDEPMSG);
 router.put(
   "/capturarDiagnostico/:id",
   fileUpload({

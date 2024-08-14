@@ -1,5 +1,6 @@
 import InformeTecnico from "../models/InformeTec.modal.js";
 import Solicitud from "../models/solicitud.modal.js";
+import Firmas from "../models/firmas.modal.js";
 
 export const verTodosInformes = async (req, res) => {
   try {
@@ -12,6 +13,7 @@ export const verTodosInformes = async (req, res) => {
         "informe.Solicita.edificio": 1,
         "informe.solicitud.diagnostico": 1,
         "informe.solicitud.material.descripcion": 1,
+        "informe.solicitud.personalDEPMSG": 1,
         "informe.solicitud.material.unidad": 1,
         "informe.solicitud.tecnicos": 1,
         _id: 0,
@@ -38,6 +40,7 @@ export const verTodosInformes = async (req, res) => {
         Observacionestecnicas: informe?.informe?.solicitud?.Diagnostico || "",
         materialesDescripcion: materialesDescripcion || "", // Descripción de materiales
         unidadDelMaterial: unidades || "",
+        personalDEPMSG: informe?.informe?.solicitud?.personalDEPMSG || "",
         nombre: informe?.informe?.Solicita?.nombre || "",
         areaSolicitante: informe?.informe?.Solicita?.areaSolicitante || "",
         edificio: informe?.informe?.Solicita?.edificio || "",
@@ -56,7 +59,6 @@ export const verTodasSoli = async (req, res) => {
     const solicitudes = await Solicitud.find(
       {},
       {
-      
         areaSolicitante: 1,
         suministros: 1,
         justificacionAdquisicion: 1,
@@ -81,6 +83,35 @@ export const verTodasSoli = async (req, res) => {
     res.json(formattedSolicitudes);
   } catch (error) {
     console.error("Error al obtener informes técnicos:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+export const verTodasFirmas = async (req, res) => {
+  try {
+    const firmas = await Firmas.find(
+      {},
+      {
+        solicitud: 1,
+        revision: 1,
+        validacion: 1,
+        autorizacion: 1,
+        _id: 0,
+      }
+    );
+
+    const formattedFirmas = firmas.map((firma) => {
+      return {
+        solicitud: firma.solicitud || "",
+        revision: firma.revision || "",
+        validacion: firma.validacion || "",
+        autorizacion: firma.autorizacion || "",
+      };
+    });
+
+    res.json(formattedFirmas);
+  } catch (error) {
+    console.error("Error al obtener firmas:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };
