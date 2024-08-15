@@ -44,7 +44,10 @@ export const crearInforme = async (req, res) => {
       user,
     } = req.body;
 
+    console.log(req.body)
+
     const estadoRecibido = await OrdenTrabajoEstados.findOne({ id: 1 });
+    const fechaInforme = fecha ? new Date(fecha) : new Date();
 
     const nuevoInforme = new InformeTecnico({
       informe: {
@@ -53,7 +56,7 @@ export const crearInforme = async (req, res) => {
           areaSolicitante: areasoli,
           edificio: edificio,
         },
-        fecha: new Date(fecha),
+        fecha: fechaInforme,
         tipoDeMantenimiento,
         tipoDeTrabajo,
         tipoDeSolicitud,
