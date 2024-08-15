@@ -17,13 +17,12 @@ export const verTodosLosTecnicos = async (req, res) => {
 // Crear un nuevo técnico
 export const crearPerfilTecnico = async (req, res) => {
   try {
-    const { nombreCompleto, edad, telefono, correo, area } = req.body;
+    const { nombreCompleto, edad, telefono, correo } = req.body;
     const nuevoTecnico = new Tecnicos({
       nombreCompleto,
       edad,
       telefono,
       correo,
-      area,
     });
     await nuevoTecnico.save();
     res.status(201).json({ mensaje: "Técnico creado con éxito", nuevoTecnico });
@@ -86,8 +85,8 @@ export const traeDescripcionTecnInforId = async (req, res) => {
 export const actualizarTecnico = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombreCompleto, edad, telefono, correo, area } = req.body;
-    console.log(req.body);
+    const { nombreCompleto, edad, telefono, correo } = req.body;
+
     const tecnico = await Tecnicos.findById(id);
     if (!tecnico) {
       return res.status(404).json({ mensaje: "Técnico no encontrado" });
@@ -96,7 +95,6 @@ export const actualizarTecnico = async (req, res) => {
     tecnico.edad = edad || tecnico.edad;
     tecnico.telefono = telefono || tecnico.telefono;
     tecnico.correo = correo || tecnico.correo;
-    tecnico.area = area || tecnico.area;
     await tecnico.save();
     res.status(200).json({ mensaje: "Técnico actualizado con éxito", tecnico });
   } catch (error) {
@@ -121,5 +119,25 @@ export const eliminarTecnico = async (req, res) => {
     res
       .status(500)
       .json({ mensaje: "Error al eliminar técnico", error: error.message });
+  }
+};
+
+// Desactivar un técnico
+export const desactivarTecnico = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const tecnico = await Tecnicos.findById(id);
+    if (!tecnico) {
+      return res.status(404).json({ mensaje: "Técnico no encontrado" });
+    }
+    tecnico.activo = false;
+    await tecnico.save();
+    res.status(200).json({ mensaje: "Técnico desactivado con éxito", tecnico });
+  } catch (error) {
+    console.error("Error al desactivar técnico:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al desactivar técnico", error: error.message });
   }
 };

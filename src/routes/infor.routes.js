@@ -16,12 +16,16 @@ import {
   actualizarInforme,
   eliminarImagenInforme,
   AsignarlePersonalDEPMSG,
+  // obtenerSolicitudesPorEstadoYMes,
 } from "../controllers/infor.controller.js";
 import fileUpload from "express-fileupload";
 
 const router = Router();
 
 router.get("/", verTodosInformes);
+router.get("/:id", verInformePorId);
+router.get("/traerImagenes/:id", verImagenesInformePorId);
+
 router.post(
   "/llenadoDEPInforme/:id",
   fileUpload({
@@ -31,6 +35,7 @@ router.post(
   llenadoDEPInforme
 );
 router.post("/", crearInforme);
+// router.post("/obtenerSolicitudesPorEstadoYMes", obtenerSolicitudesPorEstadoYMes);
 router.post("/:id/imagenes", subirImagenes);
 
 router.put("/:id", auth, editarInforme);
@@ -47,8 +52,6 @@ router.put(
 );
 router.put("/actualizarInformes/:id", editarInforme);
 
-router.get("/:id", verInformePorId);
-router.get("/traerImagenes/:id", verImagenesInformePorId);
 router.delete("/:id", auth, eliminarInforme);
 router.delete("/eliminarUnaImagen/:id", eliminarImagenInforme);
 export default router;
