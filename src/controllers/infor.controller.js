@@ -178,7 +178,9 @@ export const editarInforme = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      Solicita,
+      areasoli,
+      solicita,
+      edificio,
       fecha,
       tipoDeMantenimiento,
       tipoDeTrabajo,
@@ -201,7 +203,9 @@ export const editarInforme = async (req, res) => {
     }
 
     // Actualizar los campos proporcionados
-    informe.informe.Solicita = Solicita || informe.informe.Solicita;
+    informe.informe.Solicita.edificio = edificio || informe.informe.Solicita.edificio;
+    informe.informe.Solicita.nombre = solicita || informe.informe.Solicita.nombre;
+    informe.informe.Solicita.areaSolicitante = areasoli || informe.informe.Solicita.areaSolicitante;
     informe.informe.fecha = fecha ? new Date(fecha) : informe.informe.fecha;
     informe.informe.tipoDeMantenimiento =
       tipoDeMantenimiento || informe.informe.tipoDeMantenimiento;
