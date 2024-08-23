@@ -8,11 +8,19 @@ export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
+    const usernameFound = await User.findOne({ username });
+
+    if (usernameFound) {
+      return res.status(400).json({
+        message: ["El nombre de usuario ya está en uso"],
+      });
+    }
+
     const userFound = await User.findOne({ email });
 
     if (userFound)
       return res.status(400).json({
-        message: ["The email is already in use"],
+        message: ["El email ya esta en uso"],
       });
 
     // hashing the password
@@ -43,6 +51,7 @@ export const register = async (req, res) => {
       id: userSaved._id,
       username: userSaved.username,
       email: userSaved.email,
+      mensaje: "registro exitoso",
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -87,9 +96,64 @@ export const login = async (req, res) => {
   }
 };
 
+export const ActualizarUsuario = async (req, res) => {
+  try {
+    const { id } = req.params; // el ID del usuario a actualizar
+    const { username, email, password } = req.body; // nuevos datos del usuario
+  
+    // Buscar el usuario por ID
+    const userFound = await User.findById(id);
+
+    if (!userFound)
+      return res.status(404).json({
+        mensaje: ["Usuario no encontrado"],
+      });
+
+    if (username && username !== userFound.username) {
+      const existingUserByUsername = await User.findOne({ username });
+      if (existingUserByUsername) {
+        return res.status(400).json({
+          mensaje: ["El usuario ya está en uso"],
+        });
+      }
+    }
+
+    // Verificar si el email ya está en uso por otro usuario
+    if (email && email !== userFound.email) {
+      const emailTaken = await User.findOne({ email });
+      if (emailTaken) {
+        return res.status(400).json({
+          mensaje: ["El correo electrónico ya está en uso"],
+        });
+      }
+    }
+
+    if (username) userFound.username = username;
+
+    if (email) userFound.email = email;
+
+    if (password) {
+      const passwordHash = await bcrypt.hash(password, 10);
+      userFound.password = passwordHash;
+    } else {
+      return res.status(400).json({
+        mensaje: ["Ingrese la nueva contraseña"],
+      });
+    }
+
+    await userFound.save();
+
+    res.status(201).json({
+      mensaje: "Modificaión Exitosa",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const verifyToken = async (req, res) => {
   const { token } = req.cookies;
-  
+
   if (!token) return res.send(false);
 
   jwt.verify(token, TOKEN_SECRET, async (error, user) => {

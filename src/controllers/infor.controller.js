@@ -44,8 +44,6 @@ export const crearInforme = async (req, res) => {
       user,
     } = req.body;
 
-    console.log(req.body)
-
     const estadoRecibido = await OrdenTrabajoEstados.findOne({ id: 1 });
     const fechaInforme = fecha ? new Date(fecha) : new Date();
 
@@ -130,7 +128,6 @@ export const eliminarImagenInforme = async (req, res) => {
     }
 
     const { public_id } = req.body;
-    console.log(req.body);
 
     // Buscar la imagen en el array de imágenes
     const imagen = informe.informe.solicitud.imagenes.find(
@@ -188,8 +185,6 @@ export const editarInforme = async (req, res) => {
       descripcion,
       solicitud,
     } = req.body;
-
-    console.log(req.body);
 
     // Buscar el informe técnico por su ID
     const informe = await InformeTecnico.findById(id)

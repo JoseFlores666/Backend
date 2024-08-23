@@ -15,12 +15,15 @@ cloudinary.config({
   secure: true,
 });
 
-const myfolder = "Imagenes INNEGO"; //nombre de mi carpeta donde guardare las imagenes en cloudinary
+const myfolder = "Imagenes INNEGO"; //nombre de mi carpeta donde guardaremos las imagenes en cloudinary
 
 //Funcion para subir archivos a cloudinary
 export async function uploadImage(filePath) {
   return await cloudinary.uploader.upload(filePath, {
     folder: myfolder,
+    crop: "limit", // Evita que la imagen se recorte
+    width: 1200, // establecemos un ancho máximo
+    height: 1200, //establece un alto máximo
   });
 }
 
