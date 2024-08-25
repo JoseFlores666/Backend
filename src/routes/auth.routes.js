@@ -3,7 +3,7 @@ import {
   login,
   logout,
   register,
-  ActualizarUsuario,
+  ActualizarUsuario,traerUsuarios,
   verifyToken,
 } from "../controllers/auth.controller.js";
 import { validateSchema } from "../middlewares/validator.middleware.js";
@@ -15,6 +15,7 @@ const router = Router();
 router.post("/register", validateSchema(registerSchema), register);
 router.post("/login", validateSchema(loginSchema), login);
 router.put("/ActualizarUsuario/:id", ActualizarUsuario);
+router.get("/traerUsuarios", traerUsuarios);
 router.get("/verify", verifyToken);
 router.post("/logout", verifyToken, logout);
 

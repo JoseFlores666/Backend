@@ -100,7 +100,7 @@ export const ActualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params; // el ID del usuario a actualizar
     const { username, email, password } = req.body; // nuevos datos del usuario
-  
+
     // Buscar el usuario por ID
     const userFound = await User.findById(id);
 
@@ -146,6 +146,22 @@ export const ActualizarUsuario = async (req, res) => {
     res.status(201).json({
       mensaje: "Modificaión Exitosa",
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const traerUsuarios = async (req, res) => {
+  try {
+    const usuarios = await User.find().select("username email"); //el select para solo selecciona los campos username y email
+    
+    if (!usuarios || usuarios.length === 0) {
+      return res.status(404).json({
+        mensaje: ["Usuarios no encontrados"],
+      });
+    }
+
+    res.status(200).json(usuarios);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
