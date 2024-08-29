@@ -217,7 +217,10 @@ export const editarSolicitudFolioExterno = async (req, res) => {
 
     const { folioExterno, user } = req.body;
     console.log(user);
-    const soli = await Solicitud.findById(id);
+    const soli = await Solicitud.findById(id).populate({
+      path: "estado",
+      select: "id nombre cantidadTotal",
+    });
 
     if (!soli) {
       return res.status(500).json({ mensaje: "Solicitud no encontrada" });
