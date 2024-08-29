@@ -109,7 +109,10 @@ export const getActSinAsignar = async (req, res) => {
 
 export const obtenerIdsYNombreProyectos = async (req, res) => {
   try {
-    const proyectos = await Proyecto.find({}, "_id nombre");
+    const proyectos = await Proyecto.find({}, "_id nombre").populate({
+      path: "actividades",
+      select: "nombre descripcion",
+    });
     if (!proyectos) {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
@@ -146,7 +149,7 @@ export const eliminarProyecto = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(id);
-    const proyectoEliminado = await Proyecto.findByIdAndDelete(id);
+    const proyectoEliminado = await Proyecto.findByIdAndDelete(id)
     if (!proyectoEliminado) {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
