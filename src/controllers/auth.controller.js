@@ -36,17 +36,7 @@ export const register = async (req, res) => {
     // saving the user in the database
     const userSaved = await newUser.save();
 
-    // create access token
-    const token = await createAccessToken({
-      id: userSaved._id,
-    });
-
-    res.cookie("token", token, {
-      httpOnly: process.env.NODE_ENV !== "development",
-      secure: true,
-      sameSite: "none",
-    });
-
+  
     res.json({
       id: userSaved._id,
       username: userSaved.username,
