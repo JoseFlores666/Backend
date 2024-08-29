@@ -227,23 +227,24 @@ export const editarSolicitudFolioExterno = async (req, res) => {
 
     if (folioExterno && estado) {
       soli.folioExterno = folioExterno;
-      soli.estado = estado._id;
+
+      if (soli.estado === 1) {
+        soli.estado = estado._id;
+        const historial = new HistorialSoli({
+          user: user.id,
+          fecha: new Date(),
+          hora: new Date().toLocaleTimeString(),
+          numeroDeSolicitud: soli._id,
+          folio: soli.folio,
+          numeroDeEntrega: soli.numeroDeEntrega || "",
+          descripcion: `El usuario ${user.username} asignó un folio a la solicitud:`,
+          accion: "Asignación del folio",
+        });
+        await historial.save();
+      }
 
       await soli.save();
-
-      const historial = new HistorialSoli({
-        user: user.id,
-        fecha: new Date(),
-        hora: new Date().toLocaleTimeString(),
-        numeroDeSolicitud: soli._id,
-        folio: soli.folio,
-        numeroDeEntrega: soli.numeroDeEntrega || "",
-        descripcion: `El usuario ${user.username} asignó un folio a la solicitud:`,
-        accion: "Asignación del folio",
-      });
-
-      await historial.save();
-
+      
       res.json(soli);
       console.log("Solicitud actualizada exitosamente");
     }
