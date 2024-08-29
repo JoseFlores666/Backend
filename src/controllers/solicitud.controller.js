@@ -179,8 +179,10 @@ export const editarUnaSolicitud = async (req, res) => {
     soli.tipoSuministro = suministro;
     soli.procesoClave = pc;
     soli.proyecto = proyecto;
-    soli.actividades.actividadRef = selectedActividad.id;
-    soli.actividades.nombreActividad = selectedActividad.nombre;
+  soli.actividades[0] = {
+      actividadRef: selectedActividad.id,
+      nombreActividad: selectedActividad.nombre,
+    };
     soli.fecha = fecha;
     soli.justificacionAdquisicion = justificacion;
     soli.suministros = items;
