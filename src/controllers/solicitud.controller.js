@@ -231,7 +231,7 @@ export const editarSolicitudFolioExterno = async (req, res) => {
     if (folioExterno && estado) {
       soli.folioExterno = folioExterno;
 
-      if (soli.estado === 1) {
+    if (soli.estado.id === 1) {
         soli.estado = estado._id;
         const historial = new HistorialSoli({
           user: user.id,
